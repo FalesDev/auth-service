@@ -2,7 +2,7 @@ package co.com.pragma.api.dto;
 
 import java.time.LocalDate;
 
-public record RegisterUserDTO (
+public record UserDto(
         String id,
         String firstName,
         String lastName,
@@ -12,5 +12,5 @@ public record RegisterUserDTO (
         String email,
         Double baseSalary,
         String password
-){
+) {
 }
