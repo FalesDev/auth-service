@@ -3,7 +3,6 @@ package co.com.pragma.usecase.registeruser;
 import co.com.pragma.model.gateways.PasswordEncoder;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
-import co.com.pragma.model.user.UserValidation;
 import co.com.pragma.model.user.gateways.UserRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -13,10 +12,8 @@ public class RegisterUserUseCase {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserValidation userValidation;
 
     public Mono<User> registerUser(User user) {
-        userValidation.validateUser(user);
         return userRepository.existsByEmail(user.getEmail())
                 .flatMap(exists -> {
                     if (exists) {
