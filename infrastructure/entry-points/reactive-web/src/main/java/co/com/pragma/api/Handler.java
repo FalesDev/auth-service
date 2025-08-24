@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -17,6 +18,7 @@ public class Handler {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final UserMapper userMapper;
+    private final Validator validator;
 
     public Mono<ServerResponse> registerUser(ServerRequest request) {
         return request.bodyToMono(RegisterUserRequestDto.class)
