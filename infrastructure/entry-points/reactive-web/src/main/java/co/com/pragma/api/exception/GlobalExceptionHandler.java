@@ -4,6 +4,7 @@ import co.com.pragma.api.dto.response.ApiErrorResponse;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFilterFunction;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GlobalExceptionHandler implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
     @Override
@@ -28,6 +30,7 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                                        @NonNull HandlerFunction<ServerResponse> next) {
         return next.handle(request)
                 .onErrorResume(ValidationException.class, ex -> {
+                    log.warn("Validation error at {}: {}", request.path(), ex.getMessage());
                     List<ApiErrorResponse.FieldError> fieldErrors = ex.getErrors().entrySet().stream()
                             .map(e -> new ApiErrorResponse.FieldError(e.getKey(), e.getValue()))
                             .collect(Collectors.toList());
@@ -35,18 +38,19 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             400,
+                            "BAD REQUEST",
                             "Validation failed",
-                            ex.getMessage(),
                             request.path(),
                             fieldErrors
                     );
                     return ServerResponse.badRequest().bodyValue(response);
                 })
                 .onErrorResume(EmailAlreadyExistsException.class, ex -> {
+                    log.warn("Email conflict at {}: {}", request.path(), ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             409,
-                            "User already exists",
+                            "CONFLICT",
                             ex.getMessage(),
                             request.path(),
                             null
@@ -54,10 +58,11 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                     return ServerResponse.status(409).bodyValue(response);
                 })
                 .onErrorResume(EntityNotFoundException.class, ex -> {
+                    log.warn("Entity not found at {}: {}", request.path(), ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             404,
-                            "Role not found",
+                            "NOT FOUND",
                             ex.getMessage(),
                             request.path(),
                             null
@@ -65,10 +70,11 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                     return ServerResponse.status(404).bodyValue(response);
                 })
                 .onErrorResume(ex -> {
+                    log.error("Internal server error at {}: {}", request.path(), ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             500,
-                            "Unexpected Error",
+                            "INTERNAL SERVER ERROR",
                             ex.getMessage(),
                             request.path(),
                             null

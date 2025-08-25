@@ -1,6 +1,5 @@
 package co.com.pragma.api.dto.response;
 
-
 import java.util.List;
 
 

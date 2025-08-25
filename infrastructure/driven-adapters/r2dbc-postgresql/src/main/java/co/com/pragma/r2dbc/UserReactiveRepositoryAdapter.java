@@ -9,11 +9,13 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 @Repository
 public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         User,
         UserEntity,
-        String,
+        UUID,
         UserReactiveRepository
 > implements UserRepository {
     public UserReactiveRepositoryAdapter(UserReactiveRepository repository, ObjectMapper mapper) {
@@ -36,7 +38,7 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
-    public Mono<User> findById(String id){
+    public Mono<User> findById(UUID id){
         return super.findById(id);
     }
 

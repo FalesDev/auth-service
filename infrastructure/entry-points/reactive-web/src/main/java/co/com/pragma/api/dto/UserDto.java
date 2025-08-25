@@ -1,15 +1,15 @@
 package co.com.pragma.api.dto;
 
-import java.time.LocalDate;
+import java.util.UUID;
 
 public record UserDto(
-        String id,
+        UUID id,
         String firstName,
         String lastName,
-        LocalDate birthDate,
-        String address,
-        String phoneNumber,
         String email,
+        String idDocument,
+        String phoneNumber,
+        UUID idRole,
         Double baseSalary,
         String password
 ) {

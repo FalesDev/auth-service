@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "idRole", ignore = true)
     User toEntity(RegisterUserRequestDto dto);
 
     UserDto toResponse(User user);

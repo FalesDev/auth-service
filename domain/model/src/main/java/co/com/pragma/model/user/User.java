@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,14 +13,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class User {
-
-    private String id;
+    private UUID id;
     private String firstName;
     private String lastName;
-    private LocalDate birthDate;
-    private String address;
-    private String phoneNumber;
     private String email;
+    private String idDocument;
+    private String phoneNumber;
+    private UUID idRole;
     private Double baseSalary;
     private String password;
 }
