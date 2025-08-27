@@ -3,6 +3,7 @@ package co.com.pragma.api.exception;
 import co.com.pragma.api.dto.response.ApiErrorResponse;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
+import co.com.pragma.model.gateways.CustomLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -24,13 +25,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
+    private final CustomLogger logger;
+
     @Override
     @NonNull
     public Mono<ServerResponse> filter(@NonNull ServerRequest request,
                                        @NonNull HandlerFunction<ServerResponse> next) {
         return next.handle(request)
                 .onErrorResume(ValidationException.class, ex -> {
-                    log.warn("Validation error at {}: {}", request.path(), ex.getMessage());
+                    logger.warn("Validation error at: " + ex.getMessage());
                     List<ApiErrorResponse.FieldError> fieldErrors = ex.getErrors().entrySet().stream()
                             .map(e -> new ApiErrorResponse.FieldError(e.getKey(), e.getValue()))
                             .collect(Collectors.toList());
@@ -40,43 +43,39 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                             400,
                             "BAD REQUEST",
                             "Validation failed",
-                            request.path(),
                             fieldErrors
                     );
                     return ServerResponse.badRequest().bodyValue(response);
                 })
                 .onErrorResume(EmailAlreadyExistsException.class, ex -> {
-                    log.warn("Email conflict at {}: {}", request.path(), ex.getMessage());
+                    logger.warn("Email conflict at: " + ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             409,
                             "CONFLICT",
                             ex.getMessage(),
-                            request.path(),
                             null
                     );
                     return ServerResponse.status(409).bodyValue(response);
                 })
                 .onErrorResume(EntityNotFoundException.class, ex -> {
-                    log.warn("Entity not found at {}: {}", request.path(), ex.getMessage());
+                    logger.warn("Entity not found at: " + ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             404,
                             "NOT FOUND",
                             ex.getMessage(),
-                            request.path(),
                             null
                     );
                     return ServerResponse.status(404).bodyValue(response);
                 })
                 .onErrorResume(ex -> {
-                    log.error("Internal server error at {}: {}", request.path(), ex.getMessage());
+                    logger.warn("Internal server error at: " + ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             500,
                             "INTERNAL SERVER ERROR",
                             ex.getMessage(),
-                            request.path(),
                             null
                     );
                     return ServerResponse.status(500).bodyValue(response);

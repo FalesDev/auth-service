@@ -8,7 +8,6 @@ public record ApiErrorResponse(
         int status,
         String error,
         String message,
-        String path,
         List<FieldError> errors
 ) {
     public record FieldError(

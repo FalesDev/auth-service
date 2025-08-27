@@ -7,7 +7,10 @@ public record RegisterUserRequestDto(
         String firstName,
         @NotBlank(message = "LastName is required")
         String lastName,
-        @Email(message = "Email should be valid")
+        @Pattern(
+                regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+                message = "Email should be valid"
+        )
         @NotBlank(message = "Email is required")
         String email,
         String idDocument,
