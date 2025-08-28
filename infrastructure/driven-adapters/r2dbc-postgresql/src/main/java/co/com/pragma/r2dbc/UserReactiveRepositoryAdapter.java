@@ -28,23 +28,13 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
-    public Mono<User> update(User user) {
-        return super.save(user);
-    }
-
-    @Override
-    public Flux<User> findAll(){
-        return super.findAll();
-    }
-
-    @Override
-    public Mono<User> findById(UUID id){
-        return super.findById(id);
-    }
-
-    @Override
     public Mono<Boolean> existsByEmail(String email){
         return repository.existsByEmail(email);
+    }
+
+    @Override
+    public Mono<Boolean> existsByIdDocument(String idDocument){
+        return repository.existsByIdDocument(idDocument);
     }
 
     @Override

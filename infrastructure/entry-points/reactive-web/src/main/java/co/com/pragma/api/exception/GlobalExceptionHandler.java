@@ -5,7 +5,6 @@ import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.gateways.CustomLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFilterFunction;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class GlobalExceptionHandler implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
     private final CustomLogger logger;

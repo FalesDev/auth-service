@@ -13,7 +13,13 @@ public record RegisterUserRequestDto(
         )
         @NotBlank(message = "Email is required")
         String email,
+        @NotBlank(message = "IdDocument is required")
+        @Pattern(
+                regexp = "^\\d{8}$",
+                message = "IdDocument must contain exactly 8 digits"
+        )
         String idDocument,
+        @NotBlank(message = "PhoneNumber is required")
         String phoneNumber,
         @NotNull(message = "BaseSalary is required")
         @Min(value = 0, message = "BaseSalary must be greater or equal to 0")

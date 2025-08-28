@@ -1,22 +1,25 @@
 package co.com.pragma.r2dbc;
 
+import co.com.pragma.model.user.User;
+import co.com.pragma.r2dbc.entity.UserEntity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
+
+import java.util.UUID;
+
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserReactiveRepositoryAdapterTest {
-    // TODO: change four you own tests
 
     @InjectMocks
     UserReactiveRepositoryAdapter repositoryAdapter;
@@ -27,53 +30,121 @@ class UserReactiveRepositoryAdapterTest {
     @Mock
     ObjectMapper mapper;
 
-    /*
+    private User domain;
+    private UserEntity entity;
+
+    @BeforeEach
+    void setup() {
+        domain = User.builder()
+                .id(UUID.randomUUID())
+                .firstName("Test")
+                .lastName("User")
+                .email("test@example.com")
+                .idDocument("99999999")
+                .phoneNumber("999999999")
+                .idRole(UUID.randomUUID())
+                .baseSalary(5000.00)
+                .password("password")
+                .build();
+
+        entity = new UserEntity(
+                domain.getId(),
+                domain.getFirstName(),
+                domain.getLastName(),
+                domain.getEmail(),
+                domain.getIdDocument(),
+                domain.getPhoneNumber(),
+                domain.getIdRole(),
+                domain.getBaseSalary(),
+                domain.getPassword()
+        );
+    }
+
+
     @Test
-    void mustFindValueById() {
+    @DisplayName("Should return true when email exists")
+    void existsByEmailShouldReturnTrueWhenEmailExists() {
+        when(repository.existsByEmail(domain.getEmail())).thenReturn(Mono.just(true));
 
-        when(repository.findById("1")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
-
-        Mono<Object> result = repositoryAdapter.findById("1");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(repositoryAdapter.existsByEmail(domain.getEmail()))
+                .expectNext(true)
                 .verifyComplete();
     }
 
     @Test
-    void mustFindAllValues() {
-        when(repository.findAll()).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Should return false when email does not exist")
+    void existsByEmailShouldReturnFalseWhenEmailDoesNotExist() {
+        String nonExistentEmail = "nonexistent@example.com";
+        when(repository.existsByEmail(nonExistentEmail)).thenReturn(Mono.just(false));
 
-        Flux<Object> result = repositoryAdapter.findAll();
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(repositoryAdapter.existsByEmail(nonExistentEmail))
+                .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
-    void mustFindByExample() {
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Should return true when ID document exists")
+    void existsByIdDocumentShouldReturnTrueWhenIdDocumentExists() {
+        when(repository.existsByIdDocument(domain.getIdDocument())).thenReturn(Mono.just(true));
 
-        Flux<Object> result = repositoryAdapter.findByExample("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(repositoryAdapter.existsByIdDocument(domain.getIdDocument()))
+                .expectNext(true)
                 .verifyComplete();
     }
 
     @Test
-    void mustSaveValue() {
-        when(repository.save("test")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Should return false when ID document does not exist")
+    void existsByIdDocumentShouldReturnFalseWhenIdDocumentDoesNotExist() {
+        String nonExistentIdDocument = "nonexistentIdDocument";
+        when(repository.existsByIdDocument(nonExistentIdDocument)).thenReturn(Mono.just(false));
 
-        Mono<Object> result = repositoryAdapter.save("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(repositoryAdapter.existsByIdDocument(nonExistentIdDocument))
+                .expectNext(false)
                 .verifyComplete();
-    }*/
+    }
+
+    @Test
+    @DisplayName("Should return user when email exists")
+    void findByEmailShouldReturnUserWhenEmailExists() {
+        when(repository.findByEmail(domain.getEmail())).thenReturn(Mono.just(entity));
+        when(mapper.map(entity, User.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.findByEmail(domain.getEmail()))
+                .expectNextMatches(user -> user.getEmail().equals(domain.getEmail()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should return empty when email does not exist")
+    void findByEmailShouldReturnEmptyWhenEmailDoesNotExist() {
+        when(repository.findByEmail(domain.getEmail())).thenReturn(Mono.empty());
+
+        StepVerifier.create(repositoryAdapter.findByEmail(domain.getEmail()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should return saved user when save succeeds")
+    void saveShouldReturnSavedUser() {
+        when(mapper.map(domain, UserEntity.class)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(Mono.just(entity));
+        when(mapper.map(entity, User.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.save(domain))
+                .expectNextMatches(user -> user.getId().equals(domain.getId()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should propagate error when repository save fails")
+    void saveShouldPropagateErrorWhenRepositoryFails() {
+        RuntimeException error = new RuntimeException("DB error");
+        when(mapper.map(domain, UserEntity.class)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(Mono.error(error));
+
+        StepVerifier.create(repositoryAdapter.save(domain))
+                .expectErrorMatches(throwable -> throwable instanceof RuntimeException
+                        && throwable.getMessage().equals("DB error"))
+                .verify();
+    }
 }
