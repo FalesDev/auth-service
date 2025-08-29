@@ -3,6 +3,7 @@ package co.com.pragma.api.exception;
 import co.com.pragma.api.dto.response.ApiErrorResponse;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
+import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
 import co.com.pragma.model.gateways.CustomLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
@@ -56,6 +57,17 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                     );
                     return ServerResponse.status(409).bodyValue(response);
                 })
+                .onErrorResume(IdDocumentAlreadyExistsException.class, ex -> {
+                    logger.warn("IdDocument conflict at: " + ex.getMessage());
+                    ApiErrorResponse response = new ApiErrorResponse(
+                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                            409,
+                            "CONFLICT",
+                            ex.getMessage(),
+                            null
+                    );
+                    return ServerResponse.status(409).bodyValue(response);
+                })
                 .onErrorResume(EntityNotFoundException.class, ex -> {
                     logger.warn("Entity not found at: " + ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
@@ -68,7 +80,7 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                     return ServerResponse.status(404).bodyValue(response);
                 })
                 .onErrorResume(ex -> {
-                    logger.warn("Internal server error at: " + ex.getMessage());
+                    logger.error("Internal server error at: " + ex.getMessage());
                     ApiErrorResponse response = new ApiErrorResponse(
                             OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                             500,

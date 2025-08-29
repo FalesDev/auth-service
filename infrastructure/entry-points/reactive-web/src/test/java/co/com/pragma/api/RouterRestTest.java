@@ -97,8 +97,8 @@ class RouterRestTest {
     }
 
     @Test
-    @DisplayName("Should return 201 Created when sign-up request is successful")
-    void testSignUpEndpointSuccess() {
+    @DisplayName("Should return 201 Created when register-user request is successful")
+    void testRegisterUserEndpointSuccess() {
         webTestClient.post()
                 .uri("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,29 +112,9 @@ class RouterRestTest {
                 });
     }
 
-    /*@Test
-    @DisplayName("Should return validation error when sign-up request fails validation")
-    void testSignUpEndpointValidationFailure() {
-        ValidationException validationException = new ValidationException(Map.of(
-                "email", "Email is required"
-        ));
-
-        Mockito.when(validationService.validate(any(RegisterUserRequestDto.class)))
-                .thenReturn(Mono.error(validationException));
-
-        webTestClient.post()
-                .uri("/api/v1/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(registerUserRequestDto)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody()
-                .jsonPath("$.errors.email").isEqualTo("Email is required");
-    }*/
-
     @Test
-    @DisplayName("Should return 500 Internal Server Error when unexpected exception occurs during sign-up")
-    void testSignUpUnexpectedException() {
+    @DisplayName("Should return 500 Internal Server Error when unexpected exception occurs during register-user")
+    void testRegisterUserUnexpectedException() {
         Mockito.when(validationService.validate(any(RegisterUserRequestDto.class)))
                 .thenReturn(Mono.error(new RuntimeException()));
 

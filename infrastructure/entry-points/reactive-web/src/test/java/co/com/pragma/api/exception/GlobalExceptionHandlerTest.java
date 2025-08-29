@@ -2,6 +2,7 @@ package co.com.pragma.api.exception;
 
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
+import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
 import co.com.pragma.model.gateways.CustomLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,6 +67,20 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("Should return 409 Conflict when IdDocumentAlreadyExistsException is thrown")
+    void shouldHandleIdDocumentAlreadyExistsException() {
+        IdDocumentAlreadyExistsException ex = new IdDocumentAlreadyExistsException("IdDocument exists");
+
+        when(next.handle(any())).thenReturn(Mono.error(ex));
+
+        StepVerifier.create(handler.filter(mock(ServerRequest.class), next))
+                .expectNextMatches(response -> response.statusCode().value() == 409)
+                .verifyComplete();
+
+        verify(logger).warn(contains("IdDocument conflict"));
+    }
+
+    @Test
     @DisplayName("Should return 404 Not Found when EntityNotFoundException is thrown")
     void shouldHandleEntityNotFoundException() {
         EntityNotFoundException ex = new EntityNotFoundException("User not found");
@@ -90,6 +105,6 @@ public class GlobalExceptionHandlerTest {
                 .expectNextMatches(response -> response.statusCode().value() == 500)
                 .verifyComplete();
 
-        verify(logger).warn(contains("Internal server error"));
+        verify(logger).error(contains("Internal server error"));
     }
 }
