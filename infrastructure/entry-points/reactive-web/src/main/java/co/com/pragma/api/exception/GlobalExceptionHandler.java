@@ -17,8 +17,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,62 +30,54 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                                        @NonNull HandlerFunction<ServerResponse> next) {
         return next.handle(request)
                 .onErrorResume(ValidationException.class, ex -> {
-                    logger.warn("Validation error at: " + ex.getMessage());
-                    List<ApiErrorResponse.FieldError> fieldErrors = ex.getErrors().entrySet().stream()
-                            .map(e -> new ApiErrorResponse.FieldError(e.getKey(), e.getValue()))
-                            .collect(Collectors.toList());
-
-                    ApiErrorResponse response = new ApiErrorResponse(
-                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            400,
-                            "BAD REQUEST",
-                            "Validation failed",
-                            fieldErrors
-                    );
+                    logger.warn("Validation error at: " + ex.getErrors());
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp( OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(400)
+                            .error("BAD REQUEST")
+                            .message("Validation failed")
+                            .errors(ex.getErrors())
+                            .build();
                     return ServerResponse.badRequest().bodyValue(response);
                 })
                 .onErrorResume(EmailAlreadyExistsException.class, ex -> {
                     logger.warn("Email conflict at: " + ex.getMessage());
-                    ApiErrorResponse response = new ApiErrorResponse(
-                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            409,
-                            "CONFLICT",
-                            ex.getMessage(),
-                            null
-                    );
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(409)
+                            .error("CONFLICT")
+                            .message(ex.getMessage())
+                            .build();
                     return ServerResponse.status(409).bodyValue(response);
                 })
                 .onErrorResume(IdDocumentAlreadyExistsException.class, ex -> {
                     logger.warn("IdDocument conflict at: " + ex.getMessage());
-                    ApiErrorResponse response = new ApiErrorResponse(
-                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            409,
-                            "CONFLICT",
-                            ex.getMessage(),
-                            null
-                    );
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(409)
+                            .error("CONFLICT")
+                            .message(ex.getMessage())
+                            .build();
                     return ServerResponse.status(409).bodyValue(response);
                 })
                 .onErrorResume(EntityNotFoundException.class, ex -> {
                     logger.warn("Entity not found at: " + ex.getMessage());
-                    ApiErrorResponse response = new ApiErrorResponse(
-                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            404,
-                            "NOT FOUND",
-                            ex.getMessage(),
-                            null
-                    );
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(404)
+                            .error("NOT FOUND")
+                            .message(ex.getMessage())
+                            .build();
                     return ServerResponse.status(404).bodyValue(response);
                 })
                 .onErrorResume(ex -> {
                     logger.error("Internal server error at: " + ex.getMessage());
-                    ApiErrorResponse response = new ApiErrorResponse(
-                            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            500,
-                            "INTERNAL SERVER ERROR",
-                            ex.getMessage(),
-                            null
-                    );
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(500)
+                            .error("INTERNAL SERVER ERROR")
+                            .message(ex.getMessage())
+                            .build();
                     return ServerResponse.status(500).bodyValue(response);
                 });
     }

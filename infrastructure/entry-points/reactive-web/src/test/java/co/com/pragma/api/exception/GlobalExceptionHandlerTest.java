@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +41,7 @@ public class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 Bad Request when ValidationException is thrown")
     void shouldHandleValidationException() {
-        Map<String, String> errors = Map.of("email", "must not be blank");
+        Map<String, List<String>> errors = Map.of("email", List.of("must not be blank", "must be valid"));
         ValidationException ex = new ValidationException(errors);
 
         when(next.handle(any())).thenReturn(Mono.error(ex));
