@@ -1,8 +1,11 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
+import co.com.pragma.usecase.login.LoginUserUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +20,9 @@ import reactor.core.publisher.Mono;
 public class Handler {
 
     private final RegisterUserUseCase registerUserUseCase;
+    private final LoginUserUseCase loginUserUseCase;
     private final UserMapper userMapper;
+    private final TokenMapper tokenMapper;
     private final ValidationService validationService;
 
     public Mono<ServerResponse> registerUser(ServerRequest request) {
@@ -31,5 +36,17 @@ public class Handler {
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(dto)
                 );
+    }
+
+    public Mono<ServerResponse> loginUser(ServerRequest request) {
+        return request.bodyToMono(LoginRequest.class)
+                .flatMap(validationService::validate)
+                .flatMap(req -> loginUserUseCase.login(req.email(), req.password()))
+                .map(tokenMapper::toResponse)
+                .flatMap(res -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(res)
+                );
+
     }
 }

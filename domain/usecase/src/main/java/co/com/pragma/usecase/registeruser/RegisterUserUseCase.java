@@ -4,7 +4,7 @@ import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
 import co.com.pragma.model.gateways.CustomLogger;
-import co.com.pragma.model.gateways.PasswordEncoder;
+import co.com.pragma.model.gateways.PasswordHasher;
 import co.com.pragma.model.gateways.TransactionManager;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.role.gateways.RoleRepository;
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 public class RegisterUserUseCase {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final RoleRepository roleRepository;
     private final TransactionManager transactionManager;
     private final CustomLogger customLogger;
@@ -74,7 +74,7 @@ public class RegisterUserUseCase {
     private User prepareUser(User user, Role role) {
         customLogger.trace("Preparing user data for registration");
         user.setEmail(user.getEmail().toLowerCase());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordHasher.encode(user.getPassword()));
         user.setIdRole(role.getId());
         return user;
     }

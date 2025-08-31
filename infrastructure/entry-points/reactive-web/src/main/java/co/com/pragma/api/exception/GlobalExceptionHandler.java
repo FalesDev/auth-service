@@ -4,9 +4,12 @@ import co.com.pragma.api.dto.response.ApiErrorResponse;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
+import co.com.pragma.model.exception.TokenValidationException;
 import co.com.pragma.model.gateways.CustomLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFilterFunction;
 import org.springframework.web.reactive.function.server.HandlerFunction;
@@ -69,6 +72,36 @@ public class GlobalExceptionHandler implements HandlerFilterFunction<ServerRespo
                             .message(ex.getMessage())
                             .build();
                     return ServerResponse.status(404).bodyValue(response);
+                })
+                .onErrorResume(TokenValidationException.class, ex -> {
+                    logger.warn("JWT validation failed: " + ex.getMessage());
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(401)
+                            .error("UNAUTHORIZED")
+                            .message(ex.getMessage())
+                            .build();
+                    return ServerResponse.status(401).bodyValue(response);
+                })
+                .onErrorResume(UsernameNotFoundException.class, ex -> {
+                    logger.warn("Authentication failed: " + ex.getMessage());
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(401)
+                            .error("UNAUTHORIZED")
+                            .message("Invalid username or password")
+                            .build();
+                    return ServerResponse.status(401).bodyValue(response);
+                })
+                .onErrorResume(BadCredentialsException.class, ex -> {
+                    logger.warn("Authentication failed: " + ex.getMessage());
+                    ApiErrorResponse response = ApiErrorResponse.builder()
+                            .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                            .status(401)
+                            .error("UNAUTHORIZED")
+                            .message("Invalid username or password")
+                            .build();
+                    return ServerResponse.status(401).bodyValue(response);
                 })
                 .onErrorResume(ex -> {
                     logger.error("Internal server error at: " + ex.getMessage());

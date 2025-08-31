@@ -1,7 +1,9 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.dto.response.AuthResponse;
 import co.com.pragma.api.exception.GlobalExceptionHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -48,12 +50,40 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/login",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "loginUser",
+                    operation = @Operation(
+                            operationId = "loginUser",
+                            summary = "Login user",
+                            tags = {"Auth"},
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            schema = @Schema(implementation = LoginRequest.class)
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "201",
+                                            description = "User successfully logged in",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = AuthResponse.class)
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler,
                                                          GlobalExceptionHandler globalExceptionHandler) {
         return RouterFunctions.route()
                 .POST("/api/v1/users", handler::registerUser)
+                .POST("/api/v1/login", handler::loginUser)
                 .filter(globalExceptionHandler)
                 .build();
     }

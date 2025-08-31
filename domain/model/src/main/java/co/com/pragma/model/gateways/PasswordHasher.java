@@ -1,6 +1,6 @@
 package co.com.pragma.model.gateways;
 
-public interface PasswordEncoder {
+public interface PasswordHasher {
     String encode(String rawPassword);
     boolean matches(String rawPassword, String encodedPassword);
 }

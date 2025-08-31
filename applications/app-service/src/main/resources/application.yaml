@@ -34,3 +34,7 @@ adapters:
     schema: "public"
     username: "admin"
     password: "admin"
+
+jwt:
+  secret: rXm5xuejgjmoMoOaaP5G5EUl6Wl+nZxjHLMx2n8IPHE=
+  expiration-ms: 3600000

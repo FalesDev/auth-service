@@ -1,7 +1,7 @@
 package co.com.pragma.config;
 
 import co.com.pragma.model.gateways.CustomLogger;
-import co.com.pragma.model.gateways.PasswordEncoder;
+import co.com.pragma.model.gateways.PasswordHasher;
 import co.com.pragma.model.gateways.TransactionManager;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
@@ -39,7 +39,7 @@ public class UseCasesConfigTest {
         @Bean
         RoleRepository roleRepository() { return mock(RoleRepository.class); }
         @Bean
-        PasswordEncoder passwordEncoder() { return mock(PasswordEncoder.class); }
+        PasswordHasher passwordEncoder() { return mock(PasswordHasher.class); }
         @Bean
         TransactionManager transactionManager() { return mock(TransactionManager.class); }
         @Bean

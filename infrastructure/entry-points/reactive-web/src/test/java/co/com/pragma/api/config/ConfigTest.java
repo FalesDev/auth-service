@@ -17,6 +17,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @ContextConfiguration(classes = {
         CorsConfig.class,
         SecurityHeadersConfig.class,
+        SecurityConfig.class,
         ConfigTest.TestRouter.class
 })
 @WebFluxTest

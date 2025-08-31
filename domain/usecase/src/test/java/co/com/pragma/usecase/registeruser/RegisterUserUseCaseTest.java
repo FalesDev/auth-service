@@ -4,7 +4,7 @@ import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
 import co.com.pragma.model.gateways.CustomLogger;
-import co.com.pragma.model.gateways.PasswordEncoder;
+import co.com.pragma.model.gateways.PasswordHasher;
 import co.com.pragma.model.gateways.TransactionManager;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.role.gateways.RoleRepository;
@@ -31,7 +31,7 @@ public class RegisterUserUseCaseTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHasher passwordHasher;
     @Mock
     private RoleRepository roleRepository;
     @Mock
@@ -70,7 +70,7 @@ public class RegisterUserUseCaseTest {
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(Mono.just(false));
         when(userRepository.existsByIdDocument(testUser.getIdDocument())).thenReturn(Mono.just(false));
         when(roleRepository.findByName("CLIENT")).thenReturn(Mono.just(clientRole));
-        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
+        when(passwordHasher.encode("plainPassword")).thenReturn("encodedPassword");
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation ->
                 Mono.just(invocation.getArgument(0))
@@ -91,7 +91,7 @@ public class RegisterUserUseCaseTest {
         verify(userRepository).existsByEmail("fabricio@example.com");
         verify(userRepository).existsByIdDocument("77777777");
         verify(roleRepository).findByName("CLIENT");
-        verify(passwordEncoder).encode("plainPassword");
+        verify(passwordHasher).encode("plainPassword");
         verify(userRepository).save(any(User.class));
     }
 

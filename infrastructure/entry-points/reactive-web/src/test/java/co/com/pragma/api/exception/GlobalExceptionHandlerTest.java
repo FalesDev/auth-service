@@ -3,6 +3,7 @@ package co.com.pragma.api.exception;
 import co.com.pragma.model.exception.EmailAlreadyExistsException;
 import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
+import co.com.pragma.model.exception.TokenValidationException;
 import co.com.pragma.model.gateways.CustomLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -93,6 +96,48 @@ public class GlobalExceptionHandlerTest {
                 .verifyComplete();
 
         verify(logger).warn(contains("Entity not found"));
+    }
+
+    @Test
+    @DisplayName("Should return 401 Unauthorized when TokenValidationException is thrown")
+    void shouldHandleTokenValidationException() {
+        TokenValidationException ex = new TokenValidationException("JWT validation failed");
+
+        when(next.handle(any())).thenReturn(Mono.error(ex));
+
+        StepVerifier.create(handler.filter(mock(ServerRequest.class), next))
+                .expectNextMatches(response -> response.statusCode().value() == 401)
+                .verifyComplete();
+
+        verify(logger).warn(contains("JWT validation failed"));
+    }
+
+    @Test
+    @DisplayName("Should return 401 Unauthorized when UsernameNotFoundException is thrown")
+    void shouldHandleUsernameNotFoundException() {
+        UsernameNotFoundException ex = new UsernameNotFoundException("Authentication failed");
+
+        when(next.handle(any())).thenReturn(Mono.error(ex));
+
+        StepVerifier.create(handler.filter(mock(ServerRequest.class), next))
+                .expectNextMatches(response -> response.statusCode().value() == 401)
+                .verifyComplete();
+
+        verify(logger).warn(contains("Authentication failed"));
+    }
+
+    @Test
+    @DisplayName("Should return 401 Unauthorized when BadCredentialsException is thrown")
+    void shouldHandleBadCredentialsException() {
+        BadCredentialsException ex = new BadCredentialsException("Authentication failed");
+
+        when(next.handle(any())).thenReturn(Mono.error(ex));
+
+        StepVerifier.create(handler.filter(mock(ServerRequest.class), next))
+                .expectNextMatches(response -> response.statusCode().value() == 401)
+                .verifyComplete();
+
+        verify(logger).warn(contains("Authentication failed"));
     }
 
     @Test
