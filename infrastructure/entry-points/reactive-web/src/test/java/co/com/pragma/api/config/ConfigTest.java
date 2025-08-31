@@ -1,7 +1,9 @@
 package co.com.pragma.api.config;
 
+import co.com.pragma.api.security.JwtAuthenticationFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +20,15 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
         CorsConfig.class,
         SecurityHeadersConfig.class,
         SecurityConfig.class,
-        ConfigTest.TestRouter.class
+        ConfigTest.TestRouter.class,
+        ConfigTest.MockConfig.class
 })
 @WebFluxTest
 class ConfigTest {
 
     @Autowired
     private WebTestClient webTestClient;
+
 
     @Test
     @DisplayName("Should return 200 OK with security headers on GET /test")
@@ -88,6 +92,17 @@ class ConfigTest {
                                     .flatMap(r -> ServerResponse.noContent().build())
                     )
                     .build();
+        }
+    }
+
+    @Configuration
+    static class MockConfig {
+        @Bean
+        public JwtAuthenticationFilter jwtAuthenticationFilter() {
+            JwtAuthenticationFilter mockFilter = Mockito.mock(JwtAuthenticationFilter.class);
+            Mockito.when(mockFilter.load(Mockito.any()))
+                    .thenReturn(Mono.empty());
+            return mockFilter;
         }
     }
 }

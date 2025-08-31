@@ -22,6 +22,16 @@ public class RoleReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
+    public Mono<Role> save(Role role) {
+        return super.save(role);
+    }
+
+    @Override
+    public Mono<Role> findById(UUID id) {
+        return super.findById(id);
+    }
+
+    @Override
     public Mono<Role> findByName(String name) {
         return repository.findByName(name)
                 .map(entity -> mapper.map(entity, Role.class));

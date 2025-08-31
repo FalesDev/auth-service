@@ -5,7 +5,7 @@ import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.registeruser.RegisterUserUseCase;
+import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 public class HandlerTest {
 
     @Mock
-    private RegisterUserUseCase registerUserUseCase;
+    private RegisterUseCase registerUseCase;
 
     @Mock
     private UserMapper userMapper;
@@ -87,7 +87,7 @@ public class HandlerTest {
         when(request.bodyToMono(RegisterUserRequestDto.class)).thenReturn(Mono.just(requestDto));
         when(validationService.validate(requestDto)).thenReturn(Mono.just(requestDto));
         when(userMapper.toEntity(requestDto)).thenReturn(user);
-        when(registerUserUseCase.registerUser(user)).thenReturn(Mono.just(user));
+        when(registerUseCase.register(user)).thenReturn(Mono.just(user));
         when(userMapper.toResponse(user)).thenReturn(responseDto);
 
         Mono<ServerResponse> responseMono = handler.registerUser(request);

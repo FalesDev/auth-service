@@ -5,8 +5,8 @@ import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
-import co.com.pragma.usecase.login.LoginUserUseCase;
-import co.com.pragma.usecase.registeruser.RegisterUserUseCase;
+import co.com.pragma.usecase.login.LoginUseCase;
+import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,8 +19,8 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class Handler {
 
-    private final RegisterUserUseCase registerUserUseCase;
-    private final LoginUserUseCase loginUserUseCase;
+    private final RegisterUseCase registerUseCase;
+    private final LoginUseCase loginUseCase;
     private final UserMapper userMapper;
     private final TokenMapper tokenMapper;
     private final ValidationService validationService;
@@ -29,7 +29,7 @@ public class Handler {
         return request.bodyToMono(RegisterUserRequestDto.class)
                 .flatMap(validationService::validate)
                 .map(userMapper::toEntity)
-                .flatMap(registerUserUseCase::registerUser)
+                .flatMap(registerUseCase::register)
                 .map(userMapper::toResponse)
                 .flatMap(dto -> ServerResponse
                         .status(HttpStatus.CREATED)
@@ -41,7 +41,7 @@ public class Handler {
     public Mono<ServerResponse> loginUser(ServerRequest request) {
         return request.bodyToMono(LoginRequest.class)
                 .flatMap(validationService::validate)
-                .flatMap(req -> loginUserUseCase.login(req.email(), req.password()))
+                .flatMap(req -> loginUseCase.login(req.email(), req.password()))
                 .map(tokenMapper::toResponse)
                 .flatMap(res -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)

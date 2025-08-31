@@ -4,8 +4,10 @@ import co.com.pragma.model.gateways.CustomLogger;
 import co.com.pragma.model.gateways.PasswordHasher;
 import co.com.pragma.model.gateways.TransactionManager;
 import co.com.pragma.model.role.gateways.RoleRepository;
+import co.com.pragma.model.token.gateways.TokenRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
-import co.com.pragma.usecase.registeruser.RegisterUserUseCase;
+import co.com.pragma.usecase.login.LoginUseCase;
+import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -20,13 +22,23 @@ import org.springframework.context.annotation.FilterType;
 public class UseCasesConfig {
 
     @Bean
-    RegisterUserUseCase registerUserUseCase(
+    RegisterUseCase registerUseCase(
             UserRepository userRepository,
             PasswordHasher passwordHasher,
             RoleRepository roleRepository,
             TransactionManager transactionManager,
             CustomLogger customLogger
     ) {
-        return new RegisterUserUseCase(userRepository, passwordHasher, roleRepository, transactionManager,customLogger);
+        return new RegisterUseCase(userRepository, passwordHasher, roleRepository, transactionManager,customLogger);
+    }
+
+    @Bean
+    LoginUseCase loginUseCase(
+            UserRepository userRepository,
+            PasswordHasher passwordHasher,
+            TokenRepository tokenRepository,
+            CustomLogger customLogger
+    ) {
+        return new LoginUseCase(userRepository, passwordHasher, tokenRepository,customLogger);
     }
 }

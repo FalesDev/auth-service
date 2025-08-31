@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public class RegisterUserUseCase {
+public class RegisterUseCase {
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
@@ -22,7 +22,7 @@ public class RegisterUserUseCase {
     private final TransactionManager transactionManager;
     private final CustomLogger customLogger;
 
-    public Mono<User> registerUser(User user) {
+    public Mono<User> register(User user) {
         customLogger.trace("Starting user registration for email: {}", user.getEmail());
 
         return transactionManager.executeInTransaction(

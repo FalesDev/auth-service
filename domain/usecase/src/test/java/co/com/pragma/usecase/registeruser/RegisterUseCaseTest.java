@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RegisterUserUseCaseTest {
+public class RegisterUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
@@ -40,7 +40,7 @@ public class RegisterUserUseCaseTest {
     private CustomLogger customLogger;
 
     @InjectMocks
-    private RegisterUserUseCase registerUserUseCase;
+    private RegisterUseCase registerUseCase;
 
     private User testUser;
     private Role clientRole;
@@ -66,7 +66,7 @@ public class RegisterUserUseCaseTest {
 
     @Test
     @DisplayName("Should register user successfully when email is available and role exists")
-    void registerUserSuccess() {
+    void registerSuccess() {
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(Mono.just(false));
         when(userRepository.existsByIdDocument(testUser.getIdDocument())).thenReturn(Mono.just(false));
         when(roleRepository.findByName("CLIENT")).thenReturn(Mono.just(clientRole));
@@ -80,7 +80,7 @@ public class RegisterUserUseCaseTest {
                 invocation.getArgument(0)
         );
 
-        StepVerifier.create(registerUserUseCase.registerUser(testUser))
+        StepVerifier.create(registerUseCase.register(testUser))
                 .expectNextMatches(user ->
                         user.getEmail().equals("fabricio@example.com") &&
                                 user.getPassword().equals("encodedPassword") &&
@@ -97,7 +97,7 @@ public class RegisterUserUseCaseTest {
 
     @Test
     @DisplayName("Should throw EmailAlreadyExistsException when email is already registered")
-    void registerUserEmailAlreadyExists() {
+    void registerEmailAlreadyExists() {
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(Mono.just(true));
         when(userRepository.existsByIdDocument(testUser.getIdDocument())).thenReturn(Mono.just(false));
         when(roleRepository.findByName(anyString())).thenReturn(Mono.empty());
@@ -106,7 +106,7 @@ public class RegisterUserUseCaseTest {
                 invocation.getArgument(0)
         );
 
-        StepVerifier.create(registerUserUseCase.registerUser(testUser))
+        StepVerifier.create(registerUseCase.register(testUser))
                 .expectError(EmailAlreadyExistsException.class)
                 .verify();
 
@@ -116,7 +116,7 @@ public class RegisterUserUseCaseTest {
 
     @Test
     @DisplayName("Should throw IdDocumentAlreadyExistsException when ID document is already registered")
-    void registerUserIdDocumentAlreadyExists() {
+    void registerIdDocumentAlreadyExists() {
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(Mono.just(false));
         when(userRepository.existsByIdDocument(testUser.getIdDocument())).thenReturn(Mono.just(true));
         when(roleRepository.findByName(anyString())).thenReturn(Mono.empty());
@@ -125,7 +125,7 @@ public class RegisterUserUseCaseTest {
                 invocation.getArgument(0)
         );
 
-        StepVerifier.create(registerUserUseCase.registerUser(testUser))
+        StepVerifier.create(registerUseCase.register(testUser))
                 .expectError(IdDocumentAlreadyExistsException.class)
                 .verify();
 
@@ -136,7 +136,7 @@ public class RegisterUserUseCaseTest {
 
     @Test
     @DisplayName("Should throw EntityNotFoundException when role CLIENT does not exist")
-    void registerUserRoleNotFound() {
+    void registerRoleNotFound() {
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(Mono.just(false));
         when(userRepository.existsByIdDocument(testUser.getIdDocument())).thenReturn(Mono.just(false));
         when(roleRepository.findByName("CLIENT")).thenReturn(Mono.empty());
@@ -144,7 +144,7 @@ public class RegisterUserUseCaseTest {
                 invocation.getArgument(0)
         );
 
-        StepVerifier.create(registerUserUseCase.registerUser(testUser))
+        StepVerifier.create(registerUseCase.register(testUser))
                 .expectError(EntityNotFoundException.class)
                 .verify();
 

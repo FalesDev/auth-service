@@ -1,13 +1,18 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.dto.response.AuthResponse;
 import co.com.pragma.api.exception.GlobalExceptionHandler;
+import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
 import co.com.pragma.model.gateways.CustomLogger;
+import co.com.pragma.model.token.Token;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.registeruser.RegisterUserUseCase;
+import co.com.pragma.usecase.login.LoginUseCase;
+import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,12 +42,17 @@ class RouterRestTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private RegisterUserUseCase registerUserUseCase;
+    private RegisterUseCase registerUseCase;
+    @MockitoBean
+    private LoginUseCase loginUseCase;
     @MockitoBean private UserMapper userMapper;
+    @MockitoBean
+    private TokenMapper tokenMapper;
     @MockitoBean private ValidationService validationService;
     @MockitoBean private CustomLogger customLogger;
 
     private RegisterUserRequestDto registerUserRequestDto;
+    private LoginRequest loginRequest;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +77,11 @@ class RouterRestTest {
                 userEntity.getPassword()
         );
 
+        loginRequest = new LoginRequest(
+                userEntity.getEmail(),
+                userEntity.getPassword()
+        );
+
         UserDto userDto = new UserDto(
                 userEntity.getId(),
                 userEntity.getFirstName(),
@@ -79,26 +94,39 @@ class RouterRestTest {
                 userEntity.getPassword()
         );
 
+        Token token = new Token("test-token", 3600L);
+        AuthResponse authResponse = new AuthResponse("test-token", 3600L);
+
         Mockito.when(validationService.validate(any(RegisterUserRequestDto.class)))
                 .thenReturn(Mono.just(registerUserRequestDto));
 
+        Mockito.when(validationService.validate(any(LoginRequest.class)))
+                .thenReturn(Mono.just(loginRequest));
+
         Mockito.when(userMapper.toEntity(any(RegisterUserRequestDto.class)))
                 .thenReturn(userEntity);
+
         Mockito.when(userMapper.toResponse(any(User.class)))
                 .thenReturn(userDto);
 
-        Mockito.when(registerUserUseCase.registerUser(any(User.class)))
+        Mockito.when(tokenMapper.toResponse(any(Token.class)))
+                .thenReturn(authResponse);
+
+        Mockito.when(registerUseCase.register(any(User.class)))
                 .thenReturn(Mono.just(userEntity));
 
-        Handler handler = new Handler(registerUserUseCase, userMapper, validationService);
+        Mockito.when(loginUseCase.login(any(String.class), any(String.class)))
+                .thenReturn(Mono.just(token));
+
+        Handler handler = new Handler(registerUseCase, loginUseCase, userMapper, tokenMapper, validationService);
         webTestClient = WebTestClient.bindToRouterFunction(
                 new RouterRest().routerFunction(handler, new GlobalExceptionHandler(customLogger))
         ).build();
     }
 
     @Test
-    @DisplayName("Should return 201 Created when register-user request is successful")
-    void testRegisterUserEndpointSuccess() {
+    @DisplayName("Should return 201 Created when register request is successful")
+    void testRegisterEndpointSuccess() {
         webTestClient.post()
                 .uri("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,8 +141,24 @@ class RouterRestTest {
     }
 
     @Test
-    @DisplayName("Should return 500 Internal Server Error when unexpected exception occurs during register-user")
-    void testRegisterUserUnexpectedException() {
+    @DisplayName("Should return 200 OK when login request is successful")
+    void testLoginEndpointSuccess() {
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(AuthResponse.class)
+                .value(response -> {
+                    Assertions.assertThat(response.accessToken()).isEqualTo("test-token");
+                    Assertions.assertThat(response.expiresIn()).isEqualTo(3600L);
+                });
+    }
+
+    @Test
+    @DisplayName("Should return 500 Internal Server Error when unexpected exception occurs during register")
+    void testRegisterUnexpectedException() {
         Mockito.when(validationService.validate(any(RegisterUserRequestDto.class)))
                 .thenReturn(Mono.error(new RuntimeException()));
 

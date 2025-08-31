@@ -1,9 +1,6 @@
 package co.com.pragma.api.exception;
 
-import co.com.pragma.model.exception.EmailAlreadyExistsException;
-import co.com.pragma.model.exception.EntityNotFoundException;
-import co.com.pragma.model.exception.IdDocumentAlreadyExistsException;
-import co.com.pragma.model.exception.TokenValidationException;
+import co.com.pragma.model.exception.*;
 import co.com.pragma.model.gateways.CustomLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -113,23 +110,9 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("Should return 401 Unauthorized when UsernameNotFoundException is thrown")
-    void shouldHandleUsernameNotFoundException() {
-        UsernameNotFoundException ex = new UsernameNotFoundException("Authentication failed");
-
-        when(next.handle(any())).thenReturn(Mono.error(ex));
-
-        StepVerifier.create(handler.filter(mock(ServerRequest.class), next))
-                .expectNextMatches(response -> response.statusCode().value() == 401)
-                .verifyComplete();
-
-        verify(logger).warn(contains("Authentication failed"));
-    }
-
-    @Test
-    @DisplayName("Should return 401 Unauthorized when BadCredentialsException is thrown")
-    void shouldHandleBadCredentialsException() {
-        BadCredentialsException ex = new BadCredentialsException("Authentication failed");
+    @DisplayName("Should return 401 Unauthorized when InvalidCredentialsException is thrown")
+    void shouldHandleInvalidCredentialsException() {
+        InvalidCredentialsException ex = new InvalidCredentialsException("Authentication failed");
 
         when(next.handle(any())).thenReturn(Mono.error(ex));
 
