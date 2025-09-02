@@ -2,9 +2,13 @@ package co.com.pragma.api;
 
 import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.dto.request.UserValidationRequest;
+import co.com.pragma.api.dto.response.UserValidationResponse;
 import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
+import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
+import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,8 @@ public class Handler {
 
     private final RegisterUseCase registerUseCase;
     private final LoginUseCase loginUseCase;
+    private final FindUserByIdDocumentUseCase findUserByIdDocumentUseCase;
+    private final FindRoleByIdUseCase findRoleByIdUseCase;
     private final UserMapper userMapper;
     private final TokenMapper tokenMapper;
     private final ValidationService validationService;
@@ -48,5 +54,20 @@ public class Handler {
                         .bodyValue(res)
                 );
 
+    }
+
+    public Mono<ServerResponse> findUserByIdDocument(ServerRequest request) {
+        return request.bodyToMono(UserValidationRequest.class)
+                .flatMap(validationRequest ->
+                        findUserByIdDocumentUseCase.findUserByIdDocument(validationRequest.idDocument())
+                )
+                .flatMap(user ->
+                        findRoleByIdUseCase.findById(user.getIdRole())
+                                .map(role -> new UserValidationResponse(user.getEmail(), user.getIdDocument(), role.getName()))
+                )
+                .flatMap(response -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response)
+                );
     }
 }

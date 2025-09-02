@@ -50,6 +50,7 @@ public class JwtProviderAdapter implements TokenRepository {
                     String tokenString = Jwts.builder()
                             .subject(user.getEmail())
                             .claim("userId", user.getId().toString())
+                            .claim("idDocument", user.getIdDocument())
                             .claim("roleId", user.getIdRole().toString())
                             .claim("role", role.getName())
                             .issuedAt(new Date())

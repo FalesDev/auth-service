@@ -3,7 +3,9 @@ package co.com.pragma.api;
 import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.dto.request.UserValidationRequest;
 import co.com.pragma.api.dto.response.AuthResponse;
+import co.com.pragma.api.dto.response.UserValidationResponse;
 import co.com.pragma.api.exception.GlobalExceptionHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,6 +54,33 @@ public class RouterRest {
                     )
             ),
             @RouterOperation(
+                    path = "/api/v1/users/document",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "findUserByIdDocument",
+                    operation = @Operation(
+                            operationId = "findUserByIdDocument",
+                            summary = "Find a user by IdDocument",
+                            tags = {"User"},
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            schema = @Schema(implementation = UserValidationRequest.class)
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "User found",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = UserValidationResponse.class)
+                                            )
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
                     path = "/api/v1/login",
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
@@ -84,6 +113,7 @@ public class RouterRest {
         return RouterFunctions.route()
                 .POST("/api/v1/users", handler::registerUser)
                 .POST("/api/v1/login", handler::loginUser)
+                .POST("/api/v1/users/document", handler::findUserByIdDocument)
                 .filter(globalExceptionHandler)
                 .build();
     }

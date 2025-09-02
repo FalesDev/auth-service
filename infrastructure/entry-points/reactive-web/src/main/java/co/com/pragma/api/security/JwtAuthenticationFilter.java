@@ -1,5 +1,6 @@
 package co.com.pragma.api.security;
 
+import co.com.pragma.model.exception.TokenValidationException;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.token.gateways.TokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,12 @@ public class JwtAuthenticationFilter implements ServerSecurityContextRepository 
         return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst("Authorization"))
                 .filter(authHeader -> authHeader.startsWith("Bearer "))
                 .map(authHeader -> authHeader.substring(7))
-                .flatMap(tokenRepository::validateToken)
+                .flatMap(token -> tokenRepository.validateToken(token)
+                        .onErrorResume(TokenValidationException.class, ex -> {
+                            exchange.getAttributes().put("AUTH_ERROR", ex.getMessage());
+                            return Mono.empty();
+                        })
+                )
                 .flatMap(user -> roleRepository.findById(user.getIdRole())
                         .map(role -> {
                             var authorities = Collections.singletonList(

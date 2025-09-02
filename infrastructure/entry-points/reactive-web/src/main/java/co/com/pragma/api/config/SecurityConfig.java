@@ -2,6 +2,7 @@ package co.com.pragma.api.config;
 
 import co.com.pragma.api.dto.response.ApiErrorResponse;
 import co.com.pragma.api.security.JwtAuthenticationFilter;
+import co.com.pragma.model.gateways.CustomLogger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+    private final CustomLogger logger;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -45,6 +47,8 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/test"
                         ).permitAll()
+
+                        .pathMatchers(HttpMethod.POST, "/api/v1/users/document").authenticated()
 
                         .pathMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "ADVISER")
                         .pathMatchers(HttpMethod.POST,"/api/v1/login").permitAll()
@@ -62,6 +66,7 @@ public class SecurityConfig {
     @Bean
     public ServerAccessDeniedHandler accessDeniedHandler() {
         return (exchange, ex) -> {
+            logger.warn("Access denied: {}", ex.getMessage());
             ApiErrorResponse error = ApiErrorResponse.builder()
                     .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                     .status(HttpStatus.FORBIDDEN.value())
@@ -76,11 +81,17 @@ public class SecurityConfig {
     @Bean
     public ServerAuthenticationEntryPoint authenticationEntryPoint() {
         return (exchange, ex) -> {
+            String errorMessage = (String) exchange.getAttributes().get("AUTH_ERROR");
+            if (errorMessage == null) {
+                errorMessage = "Authentication failed";
+            }
+            logger.warn("Authentication failed: " + errorMessage);
+
             ApiErrorResponse error = ApiErrorResponse.builder()
                     .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                     .status(HttpStatus.UNAUTHORIZED.value())
                     .error(HttpStatus.UNAUTHORIZED.name())
-                    .message("Authentication failed: Invalid authentication token")
+                    .message(errorMessage)
                     .build();
 
             return writeResponse(exchange, HttpStatus.UNAUTHORIZED, error);

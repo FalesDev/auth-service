@@ -6,6 +6,8 @@ import co.com.pragma.model.gateways.TransactionManager;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.token.gateways.TokenRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
+import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
+import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +29,7 @@ public class UseCasesConfigTest {
                      new AnnotationConfigApplicationContext(TestConfig.class)) {
 
             LoginUseCase loginUseCase = context.getBean(LoginUseCase.class);
-            assertNotNull(loginUseCase, "LoginUseCase bean should be registered");
+            assertNotNull(loginUseCase, "LoginUseCase bean should be registered in the context");
         }
     }
 
@@ -38,7 +40,29 @@ public class UseCasesConfigTest {
                      new AnnotationConfigApplicationContext(TestConfig.class)) {
 
             RegisterUseCase registerUseCase = context.getBean(RegisterUseCase.class);
-            assertNotNull(registerUseCase, "RegisterUserUseCase bean should be registered");
+            assertNotNull(registerUseCase, "RegisterUserUseCase bean should be registered in the context");
+        }
+    }
+
+    @Test
+    @DisplayName("Should register FindUserByIdDocumentUseCase bean in application context")
+    void testFindUserByIdDocumentUseCaseBeanExists() {
+        try (AnnotationConfigApplicationContext context =
+                     new AnnotationConfigApplicationContext(TestConfig.class)) {
+
+            FindUserByIdDocumentUseCase findUserByIdDocumentUseCase = context.getBean(FindUserByIdDocumentUseCase.class);
+            assertNotNull(findUserByIdDocumentUseCase, "FindUserByIdDocumentUseCase bean should be registered in the context");
+        }
+    }
+
+    @Test
+    @DisplayName("Should register FindRoleByIdUseCase bean in application context")
+    void testFindRoleByIdUseCaseBeanExists() {
+        try (AnnotationConfigApplicationContext context =
+                     new AnnotationConfigApplicationContext(TestConfig.class)) {
+
+            FindRoleByIdUseCase findRoleByIdUseCase = context.getBean(FindRoleByIdUseCase.class);
+            assertNotNull(findRoleByIdUseCase, "FindRoleByIdUseCase bean should be registered in the context");
         }
     }
 

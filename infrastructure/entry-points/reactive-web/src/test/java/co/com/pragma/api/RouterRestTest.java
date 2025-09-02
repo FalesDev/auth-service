@@ -11,6 +11,7 @@ import co.com.pragma.api.service.ValidationService;
 import co.com.pragma.model.gateways.CustomLogger;
 import co.com.pragma.model.token.Token;
 import co.com.pragma.model.user.User;
+import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.assertj.core.api.Assertions;
