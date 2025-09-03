@@ -77,6 +77,7 @@ public class JwtProviderAdapter implements TokenRepository {
                 return User.builder()
                         .id(UUID.fromString(claims.get("userId", String.class)))
                         .email(claims.getSubject())
+                        .idDocument(claims.get("idDocument", String.class))
                         .idRole(UUID.fromString(claims.get("roleId", String.class)))
                         .build();
             } catch (SignatureException ex) {
