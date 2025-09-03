@@ -11,6 +11,7 @@ import co.com.pragma.api.service.ValidationService;
 import co.com.pragma.model.gateways.CustomLogger;
 import co.com.pragma.model.token.Token;
 import co.com.pragma.model.user.User;
+import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
 import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
@@ -46,6 +47,11 @@ class RouterRestTest {
     private RegisterUseCase registerUseCase;
     @MockitoBean
     private LoginUseCase loginUseCase;
+    @MockitoBean
+    private FindUserByIdDocumentUseCase findUserByIdDocumentUseCase;
+
+    @MockitoBean
+    private FindRoleByIdUseCase findRoleByIdUseCase;
     @MockitoBean private UserMapper userMapper;
     @MockitoBean
     private TokenMapper tokenMapper;
@@ -119,7 +125,15 @@ class RouterRestTest {
         Mockito.when(loginUseCase.login(any(String.class), any(String.class)))
                 .thenReturn(Mono.just(token));
 
-        Handler handler = new Handler(registerUseCase, loginUseCase, userMapper, tokenMapper, validationService);
+        Handler handler = new Handler(
+                registerUseCase,
+                loginUseCase,
+                findUserByIdDocumentUseCase,
+                findRoleByIdUseCase,
+                userMapper,
+                tokenMapper,
+                validationService
+        );
         webTestClient = WebTestClient.bindToRouterFunction(
                 new RouterRest().routerFunction(handler, new GlobalExceptionHandler(customLogger))
         ).build();

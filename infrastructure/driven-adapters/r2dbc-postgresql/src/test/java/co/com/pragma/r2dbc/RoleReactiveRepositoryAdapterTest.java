@@ -66,4 +66,36 @@ public class RoleReactiveRepositoryAdapterTest {
         StepVerifier.create(repositoryAdapter.findByName(domain.getName()))
                 .verifyComplete();
     }
+
+    @Test
+    @DisplayName("Should save role successfully")
+    void saveShouldReturnSavedRole() {
+        when(mapper.map(domain, RoleEntity.class)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(Mono.just(entity));
+        when(mapper.map(entity, Role.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.save(domain))
+                .expectNextMatches(role -> role.equals(domain))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should find role by id when exists")
+    void findByIdShouldReturnRoleWhenExists() {
+        when(repository.findById(domain.getId())).thenReturn(Mono.just(entity));
+        when(mapper.map(entity, Role.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.findById(domain.getId()))
+                .expectNextMatches(role -> role.getId().equals(domain.getId()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should return empty when role id does not exist")
+    void findByIdShouldReturnEmptyWhenNotExists() {
+        when(repository.findById(domain.getId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(repositoryAdapter.findById(domain.getId()))
+                .verifyComplete();
+    }
 }

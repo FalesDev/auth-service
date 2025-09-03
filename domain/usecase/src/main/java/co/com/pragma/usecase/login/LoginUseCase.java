@@ -1,6 +1,5 @@
 package co.com.pragma.usecase.login;
 
-import co.com.pragma.model.exception.EntityNotFoundException;
 import co.com.pragma.model.exception.InvalidCredentialsException;
 import co.com.pragma.model.gateways.CustomLogger;
 import co.com.pragma.model.gateways.PasswordHasher;

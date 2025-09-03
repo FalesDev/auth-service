@@ -1,10 +1,22 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
+import co.com.pragma.api.dto.request.UserValidationRequest;
+import co.com.pragma.api.dto.response.AuthResponse;
+import co.com.pragma.api.dto.response.UserValidationResponse;
+import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
+import co.com.pragma.model.exception.EntityNotFoundException;
+import co.com.pragma.model.exception.InvalidCredentialsException;
+import co.com.pragma.model.role.Role;
+import co.com.pragma.model.token.Token;
 import co.com.pragma.model.user.User;
+import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
+import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
+import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -20,6 +33,7 @@ import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,7 +43,19 @@ public class HandlerTest {
     private RegisterUseCase registerUseCase;
 
     @Mock
+    private LoginUseCase loginUseCase;
+
+    @Mock
+    private FindUserByIdDocumentUseCase findUserByIdDocumentUseCase;
+
+    @Mock
+    private FindRoleByIdUseCase findRoleByIdUseCase;
+
+    @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private TokenMapper tokenMapper;
 
     @Mock
     private ValidationService validationService;
@@ -40,13 +66,21 @@ public class HandlerTest {
     @InjectMocks
     private Handler handler;
 
-    private RegisterUserRequestDto requestDto;
+    private RegisterUserRequestDto registerRequestDto ;
+    private LoginRequest loginRequest;
+    private UserValidationRequest userValidationRequest;
     private User user;
-    private UserDto responseDto;
+    private UserDto userDto;
+    private Token token;
+    private Role role;
 
     @BeforeEach
     void setup() {
-        requestDto = new RegisterUserRequestDto(
+
+        UUID userId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+
+        registerRequestDto = new RegisterUserRequestDto(
                 "Fabricio",
                 "Rodriguez",
                 "fabricio@example.com",
@@ -55,45 +89,180 @@ public class HandlerTest {
                 2500.50,
                 "password123"
         );
+
+        loginRequest = new LoginRequest("fabricio@example.com", "password123");
+        userValidationRequest = new UserValidationRequest("77777777");
 
         user = User.builder()
-                .id(UUID.randomUUID())
-                .firstName(requestDto.firstName())
-                .lastName(requestDto.lastName())
-                .email(requestDto.email())
-                .idDocument(requestDto.idDocument())
-                .phoneNumber(requestDto.phoneNumber())
-                .idRole(UUID.randomUUID())
-                .baseSalary(requestDto.baseSalary())
-                .password(requestDto.password())
+                .id(userId)
+                .firstName(registerRequestDto.firstName())
+                .lastName(registerRequestDto.lastName())
+                .email(registerRequestDto.email())
+                .idDocument(registerRequestDto.idDocument())
+                .phoneNumber(registerRequestDto.phoneNumber())
+                .idRole(roleId)
+                .baseSalary(registerRequestDto.baseSalary())
+                .password(registerRequestDto.password())
                 .build();
 
-        responseDto = new UserDto(
+        userDto = new UserDto(
                 user.getId(),
-                "Fabricio",
-                "Rodriguez",
-                "fabricio@example.com",
-                "77777777",
-                "909090909",
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getIdDocument(),
+                user.getPhoneNumber(),
                 user.getIdRole(),
-                2500.50,
-                "password123"
+                user.getBaseSalary(),
+                user.getPassword()
         );
+
+        token = new Token("access-token", 3600L);
+        role = new Role(roleId, "ADMIN", "Administrator role");
     }
 
     @Test
-    @DisplayName("Should register user and return 201")
-    void testRegisterUserSuccess() {
-        when(request.bodyToMono(RegisterUserRequestDto.class)).thenReturn(Mono.just(requestDto));
-        when(validationService.validate(requestDto)).thenReturn(Mono.just(requestDto));
-        when(userMapper.toEntity(requestDto)).thenReturn(user);
+    @DisplayName("Should register user successfully and return 201 CREATED")
+    void registerUserSuccess() {
+        when(request.bodyToMono(RegisterUserRequestDto.class)).thenReturn(Mono.just(registerRequestDto));
+        when(validationService.validate(registerRequestDto)).thenReturn(Mono.just(registerRequestDto));
+        when(userMapper.toEntity(registerRequestDto)).thenReturn(user);
         when(registerUseCase.register(user)).thenReturn(Mono.just(user));
-        when(userMapper.toResponse(user)).thenReturn(responseDto);
+        when(userMapper.toResponse(user)).thenReturn(userDto);
 
         Mono<ServerResponse> responseMono = handler.registerUser(request);
 
         StepVerifier.create(responseMono)
-                .expectNextCount(1)
+                .assertNext(response -> assertEquals(HttpStatus.CREATED, response.statusCode()))
                 .verifyComplete();
+
+        verify(validationService).validate(registerRequestDto);
+        verify(userMapper).toEntity(registerRequestDto);
+        verify(registerUseCase).register(user);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    @DisplayName("Should return error when register user validation fails")
+    void registerUserValidationFailed() {
+        when(request.bodyToMono(RegisterUserRequestDto.class)).thenReturn(Mono.just(registerRequestDto));
+        when(validationService.validate(registerRequestDto)).thenReturn(Mono.error(new IllegalArgumentException("Validation failed")));
+
+        Mono<ServerResponse> responseMono = handler.registerUser(request);
+
+        StepVerifier.create(responseMono)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(validationService).validate(registerRequestDto);
+        verifyNoInteractions(userMapper, registerUseCase);
+    }
+
+    @Test
+    @DisplayName("Should login user successfully and return 200 OK")
+    void loginUserSuccess() {
+        AuthResponse tokenResponse = new AuthResponse("access-token", 3600L);
+
+        when(request.bodyToMono(LoginRequest.class)).thenReturn(Mono.just(loginRequest));
+        when(validationService.validate(loginRequest)).thenReturn(Mono.just(loginRequest));
+        when(loginUseCase.login(loginRequest.email(), loginRequest.password())).thenReturn(Mono.just(token));
+        when(tokenMapper.toResponse(token)).thenReturn(tokenResponse);
+
+        Mono<ServerResponse> responseMono = handler.loginUser(request);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> assertEquals(HttpStatus.OK, response.statusCode()))
+                .verifyComplete();
+
+        verify(validationService).validate(loginRequest);
+        verify(loginUseCase).login(loginRequest.email(), loginRequest.password());
+        verify(tokenMapper).toResponse(token);
+    }
+
+    @Test
+    @DisplayName("Should return error when login validation fails")
+    void loginUserValidationFailed() {
+        when(request.bodyToMono(LoginRequest.class)).thenReturn(Mono.just(loginRequest));
+        when(validationService.validate(loginRequest)).thenReturn(Mono.error(new IllegalArgumentException("Validation failed")));
+
+        Mono<ServerResponse> responseMono = handler.loginUser(request);
+
+        StepVerifier.create(responseMono)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(validationService).validate(loginRequest);
+        verifyNoInteractions(loginUseCase, tokenMapper);
+    }
+
+    @Test
+    @DisplayName("Should return error when login credentials are invalid")
+    void loginUserInvalidCredentials() {
+        when(request.bodyToMono(LoginRequest.class)).thenReturn(Mono.just(loginRequest));
+        when(validationService.validate(loginRequest)).thenReturn(Mono.just(loginRequest));
+        when(loginUseCase.login(loginRequest.email(), loginRequest.password()))
+                .thenReturn(Mono.error(new InvalidCredentialsException("Invalid credentials")));
+
+        Mono<ServerResponse> responseMono = handler.loginUser(request);
+
+        StepVerifier.create(responseMono)
+                .expectError(InvalidCredentialsException.class)
+                .verify();
+
+        verify(validationService).validate(loginRequest);
+        verify(loginUseCase).login(loginRequest.email(), loginRequest.password());
+        verifyNoInteractions(tokenMapper);
+    }
+
+    @Test
+    @DisplayName("Should find user by id document successfully and return 200 OK")
+    void findUserByIdDocumentSuccess() {
+        when(request.bodyToMono(UserValidationRequest.class)).thenReturn(Mono.just(userValidationRequest));
+        when(findUserByIdDocumentUseCase.findUserByIdDocument(userValidationRequest.idDocument())).thenReturn(Mono.just(user));
+        when(findRoleByIdUseCase.findById(user.getIdRole())).thenReturn(Mono.just(role));
+
+        Mono<ServerResponse> responseMono = handler.findUserByIdDocument(request);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> assertEquals(HttpStatus.OK, response.statusCode()))
+                .verifyComplete();
+
+        verify(findUserByIdDocumentUseCase).findUserByIdDocument(userValidationRequest.idDocument());
+        verify(findRoleByIdUseCase).findById(user.getIdRole());
+    }
+
+    @Test
+    @DisplayName("Should return error when user not found by id document")
+    void findUserByIdDocumentNotFound() {
+        when(request.bodyToMono(UserValidationRequest.class)).thenReturn(Mono.just(userValidationRequest));
+        when(findUserByIdDocumentUseCase.findUserByIdDocument(userValidationRequest.idDocument()))
+                .thenReturn(Mono.error(new EntityNotFoundException("User not found")));
+
+        Mono<ServerResponse> responseMono = handler.findUserByIdDocument(request);
+
+        StepVerifier.create(responseMono)
+                .expectError(EntityNotFoundException.class)
+                .verify();
+
+        verify(findUserByIdDocumentUseCase).findUserByIdDocument(userValidationRequest.idDocument());
+        verifyNoInteractions(findRoleByIdUseCase);
+    }
+
+    @Test
+    @DisplayName("Should return error when role not found for user")
+    void findUserByIdDocumentRoleNotFound() {
+        when(request.bodyToMono(UserValidationRequest.class)).thenReturn(Mono.just(userValidationRequest));
+        when(findUserByIdDocumentUseCase.findUserByIdDocument(userValidationRequest.idDocument())).thenReturn(Mono.just(user));
+        when(findRoleByIdUseCase.findById(user.getIdRole()))
+                .thenReturn(Mono.error(new EntityNotFoundException("Role not found")));
+
+        Mono<ServerResponse> responseMono = handler.findUserByIdDocument(request);
+
+        StepVerifier.create(responseMono)
+                .expectError(EntityNotFoundException.class)
+                .verify();
+
+        verify(findUserByIdDocumentUseCase).findUserByIdDocument(userValidationRequest.idDocument());
+        verify(findRoleByIdUseCase).findById(user.getIdRole());
     }
 }

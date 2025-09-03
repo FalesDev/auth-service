@@ -124,6 +124,26 @@ class UserReactiveRepositoryAdapterTest {
     }
 
     @Test
+    @DisplayName("Should return user when ID document exists")
+    void findByIdDocumentShouldReturnUserWhenIdDocumentExists() {
+        when(repository.findByIdDocument(domain.getIdDocument())).thenReturn(Mono.just(entity));
+        when(mapper.map(entity, User.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.findByIdDocument(domain.getIdDocument()))
+                .expectNextMatches(user -> user.getIdDocument().equals(domain.getIdDocument()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should return empty when ID document does not exist")
+    void findByIdDocumentShouldReturnEmptyWhenIdDocumentDoesNotExist() {
+        when(repository.findByIdDocument(domain.getIdDocument())).thenReturn(Mono.empty());
+
+        StepVerifier.create(repositoryAdapter.findByIdDocument(domain.getIdDocument()))
+                .verifyComplete();
+    }
+
+    @Test
     @DisplayName("Should return saved user when save succeeds")
     void saveShouldReturnSavedUser() {
         when(mapper.map(domain, UserEntity.class)).thenReturn(entity);
