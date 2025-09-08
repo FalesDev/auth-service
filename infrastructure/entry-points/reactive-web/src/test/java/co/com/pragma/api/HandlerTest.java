@@ -5,7 +5,6 @@ import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.dto.request.UserValidationRequest;
 import co.com.pragma.api.dto.response.AuthResponse;
-import co.com.pragma.api.dto.response.UserValidationResponse;
 import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;

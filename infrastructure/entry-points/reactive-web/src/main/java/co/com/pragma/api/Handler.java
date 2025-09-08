@@ -3,11 +3,14 @@ package co.com.pragma.api;
 import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.dto.request.UserValidationRequest;
+import co.com.pragma.api.dto.request.UsersFoundRequest;
 import co.com.pragma.api.dto.response.UserValidationResponse;
+import co.com.pragma.api.dto.response.UserFoundResponse;
 import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.api.service.ValidationService;
 import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
+import co.com.pragma.usecase.finduserbyid.FindUsersByIdUseCase;
 import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
@@ -27,6 +30,7 @@ public class Handler {
     private final LoginUseCase loginUseCase;
     private final FindUserByIdDocumentUseCase findUserByIdDocumentUseCase;
     private final FindRoleByIdUseCase findRoleByIdUseCase;
+    private final FindUsersByIdUseCase findUsersByIdUseCase;
     private final UserMapper userMapper;
     private final TokenMapper tokenMapper;
     private final ValidationService validationService;
@@ -63,11 +67,33 @@ public class Handler {
                 )
                 .flatMap(user ->
                         findRoleByIdUseCase.findById(user.getIdRole())
-                                .map(role -> new UserValidationResponse(user.getEmail(), user.getIdDocument(), role.getName()))
+                                .map(role -> new UserValidationResponse(
+                                        user.getId(),
+                                        user.getEmail(),
+                                        user.getIdDocument(),
+                                        role.getName()))
                 )
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response)
+                );
+    }
+
+    public Mono<ServerResponse> findUsersById(ServerRequest request) {
+        return request.bodyToMono(UsersFoundRequest.class)
+                .flatMapMany(req -> findUsersByIdUseCase.findByIds(req.userIds()))
+                .map(user -> new UserFoundResponse(
+                        user.getId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getIdDocument(),
+                        user.getBaseSalary()
+                ))
+                .collectList()
+                .flatMap(list -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(list)
                 );
     }
 }

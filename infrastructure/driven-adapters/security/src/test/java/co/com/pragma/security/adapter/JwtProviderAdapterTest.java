@@ -87,9 +87,9 @@ class JwtProviderAdapterTest {
     void validateTokenSuccessfully() {
         String tokenString = Jwts.builder()
                 .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
+                .claim("idUser", user.getId().toString())
                 .claim("idDocument", user.getIdDocument())
-                .claim("roleId", user.getIdRole().toString())
+                .claim("idRole", user.getIdRole().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 3600000))
                 .signWith(secretKey)
@@ -110,9 +110,9 @@ class JwtProviderAdapterTest {
 
         String invalidToken = Jwts.builder()
                 .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
+                .claim("idUser", user.getId().toString())
                 .claim("idDocument", user.getIdDocument())
-                .claim("roleId", user.getIdRole().toString())
+                .claim("idRole", user.getIdRole().toString())
                 .claim("role", role.getName())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 3600000))
@@ -131,9 +131,9 @@ class JwtProviderAdapterTest {
     void validateTokenExpired() {
         String expiredToken = Jwts.builder()
                 .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
+                .claim("idUser", user.getId().toString())
                 .claim("idDocument", user.getIdDocument())
-                .claim("roleId", user.getIdRole().toString())
+                .claim("idRole", user.getIdRole().toString())
                 .issuedAt(new Date(System.currentTimeMillis() - 7200000))
                 .expiration(new Date(System.currentTimeMillis() - 3600000))
                 .signWith(secretKey)
@@ -168,9 +168,9 @@ class JwtProviderAdapterTest {
                             .getPayload();
 
                     assertEquals(user.getEmail(), claims.getSubject());
-                    assertEquals(user.getId().toString(), claims.get("userId", String.class));
+                    assertEquals(user.getId().toString(), claims.get("idUser", String.class));
                     assertEquals(user.getIdDocument(), claims.get("idDocument", String.class));
-                    assertEquals(user.getIdRole().toString(), claims.get("roleId", String.class));
+                    assertEquals(user.getIdRole().toString(), claims.get("idRole", String.class));
                     assertEquals(role.getName(), claims.get("role", String.class));
                 })
                 .verifyComplete();

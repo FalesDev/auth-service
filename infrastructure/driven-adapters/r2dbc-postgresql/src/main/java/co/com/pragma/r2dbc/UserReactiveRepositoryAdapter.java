@@ -1,13 +1,16 @@
 package co.com.pragma.r2dbc;
 
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.r2dbc.entity.UserEntity;
 import co.com.pragma.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -24,6 +27,12 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     @Override
     public Mono<User> save(User user) {
         return super.save(user);
+    }
+
+    @Override
+    public Flux<User> findByIds(List<UUID> userIds) {
+        return super.repository.findAllById(userIds)
+                .map(this::toEntity);
     }
 
     @Override

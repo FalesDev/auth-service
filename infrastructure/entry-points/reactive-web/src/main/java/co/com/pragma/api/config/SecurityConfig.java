@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/test"
                         ).permitAll()
 
-                        .pathMatchers(HttpMethod.POST, "/api/v1/users/document").authenticated()
+                        .pathMatchers(HttpMethod.POST, "/api/v1/users/document").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.POST, "/api/v1/users/find").hasRole("ADVISER")
 
                         .pathMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "ADVISER")
                         .pathMatchers(HttpMethod.POST,"/api/v1/login").permitAll()

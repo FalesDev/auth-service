@@ -114,6 +114,7 @@ public class RouterRest {
                 .POST("/api/v1/users", handler::registerUser)
                 .POST("/api/v1/login", handler::loginUser)
                 .POST("/api/v1/users/document", handler::findUserByIdDocument)
+                .POST("/api/v1/users/find", handler::findUsersById)
                 .filter(globalExceptionHandler)
                 .build();
     }

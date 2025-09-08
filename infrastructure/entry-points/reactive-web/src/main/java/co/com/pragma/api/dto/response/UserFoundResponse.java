@@ -2,10 +2,12 @@ package co.com.pragma.api.dto.response;
 
 import java.util.UUID;
 
-public record UserValidationResponse(
+public record UserFoundResponse(
         UUID idUser,
+        String firstName,
+        String lastName,
         String email,
         String idDocument,
-        String role
+        Double baseSalary
 ) {
 }

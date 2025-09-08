@@ -49,9 +49,9 @@ public class JwtProviderAdapter implements TokenRepository {
                 .map(role -> {
                     String tokenString = Jwts.builder()
                             .subject(user.getEmail())
-                            .claim("userId", user.getId().toString())
+                            .claim("idUser", user.getId().toString())
                             .claim("idDocument", user.getIdDocument())
-                            .claim("roleId", user.getIdRole().toString())
+                            .claim("idRole", user.getIdRole().toString())
                             .claim("role", role.getName())
                             .issuedAt(new Date())
                             .expiration(new Date(System.currentTimeMillis() + expirationTimeInMs))
@@ -75,10 +75,10 @@ public class JwtProviderAdapter implements TokenRepository {
                         .getPayload();
 
                 return User.builder()
-                        .id(UUID.fromString(claims.get("userId", String.class)))
+                        .id(UUID.fromString(claims.get("idUser", String.class)))
                         .email(claims.getSubject())
                         .idDocument(claims.get("idDocument", String.class))
-                        .idRole(UUID.fromString(claims.get("roleId", String.class)))
+                        .idRole(UUID.fromString(claims.get("idRole", String.class)))
                         .build();
             } catch (SignatureException ex) {
                 throw new TokenValidationException("Invalid JWT signature");
