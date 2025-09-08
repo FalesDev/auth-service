@@ -4,10 +4,13 @@ import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.dto.request.UserValidationRequest;
+import co.com.pragma.api.dto.request.UsersFoundRequest;
 import co.com.pragma.api.dto.response.AuthResponse;
+import co.com.pragma.api.dto.response.UserFoundResponse;
 import co.com.pragma.api.dto.response.UserValidationResponse;
 import co.com.pragma.api.exception.GlobalExceptionHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -102,6 +105,35 @@ public class RouterRest {
                                             content = @Content(
                                                     mediaType = "application/json",
                                                     schema = @Schema(implementation = AuthResponse.class)
+                                            )
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/users/find",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "findUsersById",
+                    operation = @Operation(
+                            operationId = "findUsersById",
+                            summary = "Find users by id",
+                            tags = {"User"},
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            schema = @Schema(implementation = UsersFoundRequest.class)
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Users found",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    array = @ArraySchema(
+                                                            schema = @Schema(implementation = UserFoundResponse.class)
+                                                    )
                                             )
                                     )
                             }

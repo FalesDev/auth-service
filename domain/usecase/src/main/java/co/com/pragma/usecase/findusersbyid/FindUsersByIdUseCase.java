@@ -1,4 +1,4 @@
-package co.com.pragma.usecase.finduserbyid;
+package co.com.pragma.usecase.findusersbyid;
 
 import co.com.pragma.model.gateways.CustomLogger;
 import co.com.pragma.model.user.User;

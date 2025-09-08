@@ -8,6 +8,7 @@ import co.com.pragma.model.token.gateways.TokenRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
 import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
+import co.com.pragma.usecase.findusersbyid.FindUsersByIdUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.junit.jupiter.api.DisplayName;
@@ -63,6 +64,17 @@ public class UseCasesConfigTest {
 
             FindRoleByIdUseCase findRoleByIdUseCase = context.getBean(FindRoleByIdUseCase.class);
             assertNotNull(findRoleByIdUseCase, "FindRoleByIdUseCase bean should be registered in the context");
+        }
+    }
+
+    @Test
+    @DisplayName("Should register FindUsersByIdUseCase bean in application context")
+    void testFindUsersByIdUseCaseCaseBeanExists() {
+        try (AnnotationConfigApplicationContext context =
+                     new AnnotationConfigApplicationContext(TestConfig.class)) {
+
+            FindUsersByIdUseCase findUsersByIdUseCase = context.getBean(FindUsersByIdUseCase.class);
+            assertNotNull(findUsersByIdUseCase, "FindUsersByIdUseCase bean should be registered in the context");
         }
     }
 

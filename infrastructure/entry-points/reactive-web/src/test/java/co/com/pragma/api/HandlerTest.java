@@ -4,6 +4,7 @@ import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.api.dto.request.LoginRequest;
 import co.com.pragma.api.dto.request.RegisterUserRequestDto;
 import co.com.pragma.api.dto.request.UserValidationRequest;
+import co.com.pragma.api.dto.request.UsersFoundRequest;
 import co.com.pragma.api.dto.response.AuthResponse;
 import co.com.pragma.api.mapper.TokenMapper;
 import co.com.pragma.api.mapper.UserMapper;
@@ -15,6 +16,7 @@ import co.com.pragma.model.token.Token;
 import co.com.pragma.model.user.User;
 import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
 import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
+import co.com.pragma.usecase.findusersbyid.FindUsersByIdUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +29,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,6 +53,9 @@ public class HandlerTest {
 
     @Mock
     private FindRoleByIdUseCase findRoleByIdUseCase;
+
+    @Mock
+    private FindUsersByIdUseCase findUsersByIdUseCase;
 
     @Mock
     private UserMapper userMapper;
@@ -263,5 +270,70 @@ public class HandlerTest {
 
         verify(findUserByIdDocumentUseCase).findUserByIdDocument(userValidationRequest.idDocument());
         verify(findRoleByIdUseCase).findById(user.getIdRole());
+    }
+
+    @Test
+    @DisplayName("Should find users by IDs successfully and return 200 OK")
+    void findUsersByIdSuccess() {
+        // Arrange
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
+        List<UUID> userIds = List.of(userId1, userId2);
+        UsersFoundRequest usersFoundRequest = new UsersFoundRequest(userIds);
+
+        User user1 = User.builder()
+                .id(userId1)
+                .firstName("User1")
+                .lastName("Test")
+                .email("user1@test.com")
+                .idDocument("11111111")
+                .baseSalary(3000.00)
+                .build();
+
+        User user2 = User.builder()
+                .id(userId2)
+                .firstName("User2")
+                .lastName("Test")
+                .email("user2@test.com")
+                .idDocument("22222222")
+                .baseSalary(4000.00)
+                .build();
+
+        when(request.bodyToMono(UsersFoundRequest.class)).thenReturn(Mono.just(usersFoundRequest));
+        when(findUsersByIdUseCase.findByIds(userIds)).thenReturn(Flux.just(user1, user2));
+
+        // Act & Assert
+        Mono<ServerResponse> responseMono = handler.findUsersById(request);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    // You might want to verify the response body content as well
+                })
+                .verifyComplete();
+
+        verify(findUsersByIdUseCase).findByIds(userIds);
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no users found by IDs")
+    void findUsersByIdEmptyResult() {
+        // Arrange
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
+        List<UUID> userIds = List.of(userId1, userId2);
+        UsersFoundRequest usersFoundRequest = new UsersFoundRequest(userIds);
+
+        when(request.bodyToMono(UsersFoundRequest.class)).thenReturn(Mono.just(usersFoundRequest));
+        when(findUsersByIdUseCase.findByIds(userIds)).thenReturn(Flux.empty());
+
+        // Act & Assert
+        Mono<ServerResponse> responseMono = handler.findUsersById(request);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> assertEquals(HttpStatus.OK, response.statusCode()))
+                .verifyComplete();
+
+        verify(findUsersByIdUseCase).findByIds(userIds);
     }
 }

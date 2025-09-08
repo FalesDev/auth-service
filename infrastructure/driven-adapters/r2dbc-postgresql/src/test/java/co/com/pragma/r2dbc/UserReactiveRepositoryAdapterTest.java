@@ -10,10 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -166,5 +168,27 @@ class UserReactiveRepositoryAdapterTest {
                 .expectErrorMatches(throwable -> throwable instanceof RuntimeException
                         && throwable.getMessage().equals("DB error"))
                 .verify();
+    }
+
+    @Test
+    @DisplayName("Should return users when findByIds returns data")
+    void findByIdsShouldReturnUsers() {
+        List<UUID> ids = List.of(domain.getId());
+        when(repository.findAllById(ids)).thenReturn(Flux.just(entity));
+        when(mapper.map(entity, User.class)).thenReturn(domain);
+
+        StepVerifier.create(repositoryAdapter.findByIds(ids))
+                .expectNextMatches(user -> user.getId().equals(domain.getId()))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should return empty Flux when findByIds returns no data")
+    void findByIdsShouldReturnEmptyFlux() {
+        List<UUID> ids = List.of(domain.getId());
+        when(repository.findAllById(ids)).thenReturn(Flux.empty());
+
+        StepVerifier.create(repositoryAdapter.findByIds(ids))
+                .verifyComplete();
     }
 }

@@ -8,6 +8,7 @@ import co.com.pragma.model.token.gateways.TokenRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.findrolebyid.FindRoleByIdUseCase;
 import co.com.pragma.usecase.finduserbyiddocument.FindUserByIdDocumentUseCase;
+import co.com.pragma.usecase.findusersbyid.FindUsersByIdUseCase;
 import co.com.pragma.usecase.login.LoginUseCase;
 import co.com.pragma.usecase.registeruser.RegisterUseCase;
 import org.springframework.context.annotation.Bean;
@@ -58,5 +59,13 @@ public class UseCasesConfig {
             CustomLogger customLogger
     ) {
         return new FindRoleByIdUseCase(roleRepository,customLogger);
+    }
+
+    @Bean
+    FindUsersByIdUseCase findUsersByIdUseCase(
+            UserRepository userRepository,
+            CustomLogger customLogger
+    ) {
+        return new FindUsersByIdUseCase(userRepository,customLogger);
     }
 }
