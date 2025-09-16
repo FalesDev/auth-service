@@ -71,6 +71,7 @@ public class Handler {
                                         user.getId(),
                                         user.getEmail(),
                                         user.getIdDocument(),
+                                        user.getBaseSalary(),
                                         role.getName()))
                 )
                 .flatMap(response -> ServerResponse.ok()

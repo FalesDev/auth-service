@@ -6,6 +6,7 @@ public record UserValidationResponse(
         UUID idUser,
         String email,
         String idDocument,
+        Double baseSalary,
         String role
 ) {
 }
