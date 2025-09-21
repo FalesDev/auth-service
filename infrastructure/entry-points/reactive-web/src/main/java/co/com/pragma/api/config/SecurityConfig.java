@@ -48,11 +48,12 @@ public class SecurityConfig {
                                 "/test"
                         ).permitAll()
 
-                        .pathMatchers(HttpMethod.POST, "/api/v1/users/document").hasRole("CLIENT")
-                        .pathMatchers(HttpMethod.POST, "/api/v1/users/find").hasRole("ADVISER")
+                        .pathMatchers(HttpMethod.POST, "/auth/api/v1/users/document").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.POST, "/auth/api/v1/users/find").hasRole("ADVISER")
 
-                        .pathMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "ADVISER")
-                        .pathMatchers(HttpMethod.POST,"/api/v1/login").permitAll()
+                        .pathMatchers("/auth/api/v1/users/**").hasAnyRole("ADMIN", "ADVISER")
+                        .pathMatchers("/auth/actuator/**").permitAll()
+                        .pathMatchers(HttpMethod.POST,"/auth/api/v1/login").permitAll()
 
                         .anyExchange().authenticated()
                 )

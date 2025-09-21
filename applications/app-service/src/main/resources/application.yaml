@@ -19,6 +19,7 @@ management:
     web:
       exposure:
         include: "health,prometheus"
+      base-path: /auth/actuator
   endpoint:
     health:
       probes:
@@ -34,7 +35,8 @@ adapters:
     schema: "public"
     username: "admin"
     password: "admin"
+    ssl: false
 
 jwt:
-  secret: rXm5xuejgjmoMoOaaP5G5EUl6Wl+nZxjHLMx2n8IPHE=
-  expiration-ms: 3600000
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS}

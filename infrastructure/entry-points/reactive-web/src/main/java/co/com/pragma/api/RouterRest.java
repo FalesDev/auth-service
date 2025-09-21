@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -25,12 +26,13 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
+@RequiredArgsConstructor
 public class RouterRest {
 
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/v1/users",
+                    path = "/auth/api/v1/users",
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "registerUser",
@@ -57,7 +59,7 @@ public class RouterRest {
                     )
             ),
             @RouterOperation(
-                    path = "/api/v1/users/document",
+                    path = "/auth/api/v1/users/document",
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "findUserByIdDocument",
@@ -84,7 +86,7 @@ public class RouterRest {
                     )
             ),
             @RouterOperation(
-                    path = "/api/v1/login",
+                    path = "/auth/api/v1/login",
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "loginUser",
@@ -111,7 +113,7 @@ public class RouterRest {
                     )
             ),
             @RouterOperation(
-                    path = "/api/v1/users/find",
+                    path = "/auth/api/v1/users/find",
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "findUsersById",
@@ -143,10 +145,10 @@ public class RouterRest {
     public RouterFunction<ServerResponse> routerFunction(Handler handler,
                                                          GlobalExceptionHandler globalExceptionHandler) {
         return RouterFunctions.route()
-                .POST("/api/v1/users", handler::registerUser)
-                .POST("/api/v1/login", handler::loginUser)
-                .POST("/api/v1/users/document", handler::findUserByIdDocument)
-                .POST("/api/v1/users/find", handler::findUsersById)
+                .POST("/auth/api/v1/users", handler::registerUser)
+                .POST("/auth/api/v1/login", handler::loginUser)
+                .POST("/auth/api/v1/users/document", handler::findUserByIdDocument)
+                .POST("/auth/api/v1/users/find", handler::findUsersById)
                 .filter(globalExceptionHandler)
                 .build();
     }
