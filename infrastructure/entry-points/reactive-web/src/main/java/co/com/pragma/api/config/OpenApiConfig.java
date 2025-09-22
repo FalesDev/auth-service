@@ -28,6 +28,10 @@ import org.springframework.http.HttpHeaders;
                 @Server(
                         description = "Local ENV",
                         url = "http://localhost:8080"
+                ),
+                @Server(
+                        description = "PROD ENV",
+                        url = "https://8xuvz84j3m.execute-api.us-east-1.amazonaws.com"
                 )
         },
         security = @SecurityRequirement(

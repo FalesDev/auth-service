@@ -26,14 +26,17 @@ public class DataInitializer {
         Mono<Role> adminRole = createRoleIfNotFound("ADMIN","Administrator with full access");
         Mono<Role> adviserRole = createRoleIfNotFound("ADVISER","Advisor with limited access");
         Mono<Role> clientRole = createRoleIfNotFound("CLIENT","Client with access to own resources only");
+        Mono<Role> reportRole = createRoleIfNotFound("REPORT_JOB", "Role for scheduled reporting jobs");
 
-        Mono.when(adminRole, adviserRole, clientRole)
+        Mono.when(adminRole, adviserRole, clientRole, reportRole)
                 .then(adminRole.flatMap(role -> createUserIfNotFound(
                         "Admin", "admin@test.com", "11111111", "987654321", role, "adminpassword")))
                 .then(adviserRole.flatMap(role -> createUserIfNotFound(
                         "Adviser", "adviser@test.com", "11111112", "987654322", role, "adviserpassword")))
                 .then(clientRole.flatMap(role -> createUserIfNotFound(
                         "Client", "client@test.com", "11111113", "987654323", role, "clientpassword")))
+                .then(reportRole.flatMap(role -> createUserIfNotFound(
+                        "Report", "report-service@test.com", "11111114", "987654366", role, "reportpassword")))
                 .doOnError(err -> customLogger.error("Data initialization failed: {}", err.getMessage()))
                 .subscribe();
     }
