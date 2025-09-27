@@ -4,11 +4,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mockStatic;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class MainApplicationTest {
 
     @Test
@@ -18,12 +19,7 @@ public class MainApplicationTest {
         // it only verifies that the Spring context starts successfully.
     }
 
-    @Test
-    @DisplayName("Should run main method without errors")
-    void testMainMethod() {
-        assertThatCode(() -> MainApplication.main(new String[]{}))
-                .doesNotThrowAnyException();
-    }
+
 
     @Test
     @DisplayName("Should run Spring application with main method")

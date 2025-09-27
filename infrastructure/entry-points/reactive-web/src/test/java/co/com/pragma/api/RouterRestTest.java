@@ -48,7 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 @WebFluxTest
 class RouterRestTest {
 
-    /*@Autowired
+    @Autowired
     private WebTestClient webTestClient;
 
     @MockitoBean
@@ -154,7 +154,7 @@ class RouterRestTest {
     @DisplayName("Should return 201 Created when register request is successful")
     void testRegisterEndpointSuccess() {
         webTestClient.post()
-                .uri("/api/v1/users")
+                .uri("/auth//api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(registerUserRequestDto)
                 .exchange()
@@ -170,7 +170,7 @@ class RouterRestTest {
     @DisplayName("Should return 200 OK when login request is successful")
     void testLoginEndpointSuccess() {
         webTestClient.post()
-                .uri("/api/v1/login")
+                .uri("/auth/api/v1/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(loginRequest)
                 .exchange()
@@ -203,6 +203,7 @@ class RouterRestTest {
                 user.getId(),
                 user.getEmail(),
                 user.getIdDocument(),
+                user.getBaseSalary(),
                 role.getName()
         );
 
@@ -212,7 +213,7 @@ class RouterRestTest {
                 .thenReturn(Mono.just(role));
 
         webTestClient.post()
-                .uri("/api/v1/users/document")
+                .uri("/auth/api/v1/users/document")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(new UserValidationRequest("12345678"))
                 .exchange()
@@ -255,7 +256,7 @@ class RouterRestTest {
                 .thenReturn(Flux.just(user1, user2));
 
         webTestClient.post()
-                .uri("/api/v1/users/find")
+                .uri("/auth/api/v1/users/find")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .exchange()
@@ -275,12 +276,12 @@ class RouterRestTest {
                 .thenReturn(Mono.error(new RuntimeException()));
 
         webTestClient.post()
-                .uri("/api/v1/users")
+                .uri("/auth/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(registerUserRequestDto)
                 .exchange()
                 .expectStatus().is5xxServerError()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo("500");
-    }*/
+    }
 }

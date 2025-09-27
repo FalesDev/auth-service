@@ -11,8 +11,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -25,20 +23,19 @@ import java.util.UUID;
 
 
 @Component
-@RequiredArgsConstructor
 public class JwtProviderAdapter implements TokenRepository {
 
-    @Value("${jwt.secret}")
-    private String secretKeyString;
-
-    @Value("${jwt.expiration-ms}")
-    private Long expirationTimeInMs;
-
     private final RoleRepository roleRepository;
-    private SecretKey secretKey;
+    private final Long expirationTimeInMs;
+    private final SecretKey secretKey;
 
-    @PostConstruct
-    public void init() {
+    public JwtProviderAdapter(
+            RoleRepository roleRepository,
+            @Value("${jwt.secret}") String secretKeyString,
+            @Value("${jwt.expiration-ms}") long expirationTimeInMs
+    ) {
+        this.roleRepository = roleRepository;
+        this.expirationTimeInMs = expirationTimeInMs;
         this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKeyString));
     }
 

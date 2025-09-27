@@ -32,7 +32,6 @@ class JwtProviderAdapterTest {
     @Mock
     private RoleRepository roleRepository;
 
-    @InjectMocks
     private JwtProviderAdapter jwtProviderAdapter;
 
     private User user;
@@ -45,12 +44,8 @@ class JwtProviderAdapterTest {
                 .encodeToString("test-secret-key-12345678901234567890123456789012".getBytes());
         Long expirationTimeInMs = 3600000L;
 
-        ReflectionTestUtils.setField(jwtProviderAdapter, "secretKeyString", secretKeyString);
-        ReflectionTestUtils.setField(jwtProviderAdapter, "expirationTimeInMs", expirationTimeInMs);
-
-        jwtProviderAdapter.init();
-
-        secretKey = (SecretKey) ReflectionTestUtils.getField(jwtProviderAdapter, "secretKey");
+        jwtProviderAdapter = new JwtProviderAdapter(roleRepository, secretKeyString, expirationTimeInMs);
+        secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKeyString));
 
         user = User.builder()
                 .id(UUID.randomUUID())

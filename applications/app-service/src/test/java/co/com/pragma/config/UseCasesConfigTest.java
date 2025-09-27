@@ -24,57 +24,16 @@ import static org.mockito.Mockito.mock;
 public class UseCasesConfigTest {
 
     @Test
-    @DisplayName("Should register LoginUseCase bean in application context")
-    void testLoginUseCaseBeanExists() {
+    @DisplayName("Should register all UseCase beans in application context")
+    void testAllUseCaseBeansExist() {
         try (AnnotationConfigApplicationContext context =
                      new AnnotationConfigApplicationContext(TestConfig.class)) {
 
-            LoginUseCase loginUseCase = context.getBean(LoginUseCase.class);
-            assertNotNull(loginUseCase, "LoginUseCase bean should be registered in the context");
-        }
-    }
-
-    @Test
-    @DisplayName("Should register RegisterUserUseCase bean in application context")
-    void testRegisterUseCaseBeanExists() {
-        try (AnnotationConfigApplicationContext context =
-                     new AnnotationConfigApplicationContext(TestConfig.class)) {
-
-            RegisterUseCase registerUseCase = context.getBean(RegisterUseCase.class);
-            assertNotNull(registerUseCase, "RegisterUserUseCase bean should be registered in the context");
-        }
-    }
-
-    @Test
-    @DisplayName("Should register FindUserByIdDocumentUseCase bean in application context")
-    void testFindUserByIdDocumentUseCaseBeanExists() {
-        try (AnnotationConfigApplicationContext context =
-                     new AnnotationConfigApplicationContext(TestConfig.class)) {
-
-            FindUserByIdDocumentUseCase findUserByIdDocumentUseCase = context.getBean(FindUserByIdDocumentUseCase.class);
-            assertNotNull(findUserByIdDocumentUseCase, "FindUserByIdDocumentUseCase bean should be registered in the context");
-        }
-    }
-
-    @Test
-    @DisplayName("Should register FindRoleByIdUseCase bean in application context")
-    void testFindRoleByIdUseCaseBeanExists() {
-        try (AnnotationConfigApplicationContext context =
-                     new AnnotationConfigApplicationContext(TestConfig.class)) {
-
-            FindRoleByIdUseCase findRoleByIdUseCase = context.getBean(FindRoleByIdUseCase.class);
-            assertNotNull(findRoleByIdUseCase, "FindRoleByIdUseCase bean should be registered in the context");
-        }
-    }
-
-    @Test
-    @DisplayName("Should register FindUsersByIdUseCase bean in application context")
-    void testFindUsersByIdUseCaseCaseBeanExists() {
-        try (AnnotationConfigApplicationContext context =
-                     new AnnotationConfigApplicationContext(TestConfig.class)) {
-
-            FindUsersByIdUseCase findUsersByIdUseCase = context.getBean(FindUsersByIdUseCase.class);
-            assertNotNull(findUsersByIdUseCase, "FindUsersByIdUseCase bean should be registered in the context");
+            assertNotNull(context.getBean(LoginUseCase.class));
+            assertNotNull(context.getBean(RegisterUseCase.class));
+            assertNotNull(context.getBean(FindUserByIdDocumentUseCase.class));
+            assertNotNull(context.getBean(FindRoleByIdUseCase.class));
+            assertNotNull(context.getBean(FindUsersByIdUseCase.class));
         }
     }
 

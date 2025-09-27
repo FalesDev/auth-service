@@ -99,4 +99,22 @@ public class FindUsersByIdUseCaseTest {
         verify(customLogger).trace("Search completed for user ids: {}", emptyIds);
         verify(userRepository).findByIds(emptyIds);
     }
+
+    @Test
+    @DisplayName("Should log error when repository returns an error")
+    void shouldLogErrorWhenRepositoryFails() {
+        List<UUID> ids = List.of(id1, id2);
+        RuntimeException ex = new RuntimeException("DB is down");
+
+        when(userRepository.findByIds(ids)).thenReturn(Flux.error(ex));
+
+        StepVerifier.create(findUsersByIdUseCase.findByIds(ids))
+                .expectErrorMatches(throwable -> throwable instanceof RuntimeException &&
+                        throwable.getMessage().equals("DB is down"))
+                .verify();
+
+        verify(customLogger).trace("Finding users by ids: {}", ids);
+        verify(customLogger).trace("Error searching for users by ids: {}, error: {}", ids, "DB is down");
+        verify(userRepository).findByIds(ids);
+    }
 }

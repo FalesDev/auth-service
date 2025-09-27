@@ -93,7 +93,7 @@ class ConfigTest {
         when(jwtAuthenticationFilter.load(any())).thenReturn(Mono.empty());
 
         webTestClient.get()
-                .uri("/api/v1/users/123")
+                .uri("/auth/api/v1/users/123")
                 .header("Authorization", "Bearer invalid")
                 .exchange()
                 .expectStatus().isUnauthorized()
@@ -113,7 +113,7 @@ class ConfigTest {
         });
 
         webTestClient.get()
-                .uri("/api/v1/users/123")
+                .uri("/auth/api/v1/users/123")
                 .header("Authorization", "Bearer expired")
                 .exchange()
                 .expectStatus().isUnauthorized()
@@ -135,7 +135,7 @@ class ConfigTest {
         when(jwtAuthenticationFilter.load(any())).thenReturn(Mono.just(securityContext));
 
         webTestClient.get()
-                .uri("/api/v1/users/123")
+                .uri("/auth/api/v1/users/123")
                 .header("Authorization", "Bearer validButInsufficientRole")
                 .exchange()
                 .expectStatus().isForbidden()
@@ -153,7 +153,7 @@ class ConfigTest {
             return route()
                     .GET("/test", req -> ServerResponse.ok().bodyValue("ok"))
                     .POST("/test", req -> ServerResponse.noContent().build())
-                    .GET("/api/v1/users/123", req -> ServerResponse.ok().bodyValue("user details"))
+                    .GET("/auth/api/v1/users/123", req -> ServerResponse.ok().bodyValue("user details"))
                     .build();
         }
     }
