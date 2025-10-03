@@ -40,9 +40,9 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         // Swagger endpoints
                         .pathMatchers(
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
+                                "/auth/swagger-ui.html",
+                                "/auth/swagger-ui/**",
+                                "/auth/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/test"

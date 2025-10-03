@@ -40,3 +40,9 @@ adapters:
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS}
+
+springdoc:
+  swagger-ui:
+    path: /auth/swagger-ui.html
+  api-docs:
+    path: /auth/v3/api-docs
